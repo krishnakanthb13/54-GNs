@@ -1,0 +1,445 @@
+```text
+You are an expert senior Frontend Engineer, UI/UX Designer, and PWA developer.
+
+Build a production-quality, single-page web application called:
+
+# Apartment Water Motor Duty Tracker
+
+The application will be hosted on Vercel and stored in GitHub.
+
+## Technology Requirements
+
+- HTML5
+- CSS3
+- Vanilla JavaScript (No frameworks)
+- Single HTML page
+- No backend
+- No external database
+- Fully self-contained
+- Mobile-first responsive design
+- Modern glassmorphism/minimal UI
+- Works offline after first load (Progressive Web App if possible)
+- Dark Mode + Light Mode
+- Print friendly
+- SEO friendly
+
+The application must automatically calculate responsibility based only on:
+
+- Start Date
+- List of Flats
+
+No manual weekly editing should ever be required.
+
+--------------------------------------------------
+FEATURES
+--------------------------------------------------
+
+The homepage should immediately show:
+
+# Header
+
+Apartment Water Motor Duty
+
+Large title
+
+Current Status Card
+
+Display:
+
+Today's Date
+
+Week Number (ISO Week)
+
+Current Week
+
+Week Start Date (Monday)
+
+Week End Date (Sunday)
+
+Days Remaining until next Monday
+
+Large countdown
+
+Example
+
+3 Days Remaining
+
+--------------------------------------------------
+
+Current Responsible Flat
+
+Display prominently
+
+Flat 7
+
+Responsible This Week
+
+Include:
+
+Start Date
+
+End Date
+
+--------------------------------------------------
+
+Instructions Card
+
+Display instructions like:
+
+Morning
+✔ Turn ON motor
+✔ Check overhead tank
+
+Evening
+✔ Turn OFF motor
+✔ Verify tank is not overflowing
+
+If unavailable
+
+✔ Inform WhatsApp group
+✔ Request another resident to help
+
+Emergency
+
+✔ Report pump issues immediately
+
+--------------------------------------------------
+
+Upcoming Schedule Button
+
+Button:
+
+View Upcoming Weeks
+
+When clicked:
+
+Smooth animation
+
+Show upcoming schedule as beautiful tiles.
+
+Each tile contains
+
+Week Number
+
+Monday Date
+
+Sunday Date
+
+Responsible Flat
+
+Example
+
+Week 36
+
+4 Aug - 10 Aug
+
+Flat 3
+
+Repeat for at least next 20 weeks.
+
+--------------------------------------------------
+
+Previous Schedule
+
+Another button
+
+View Previous Weeks
+
+Shows last 12 weeks.
+
+--------------------------------------------------
+
+Cycle Logic
+
+Flats rotate forever.
+
+Example
+
+Flat 1
+
+Flat 2
+
+Flat 3
+
+Flat 4
+
+Flat 5
+
+...
+
+Flat N
+
+Then repeat.
+
+The responsible flat is calculated as
+
+weeks elapsed since start date modulo number of flats.
+
+No hardcoded schedule.
+
+--------------------------------------------------
+
+Configuration
+
+All editable configuration should be at top of JS.
+
+Example
+
+const START_DATE = "2026-01-05";
+
+const FLATS = [
+"Flat 1",
+"Flat 2",
+"Flat 3",
+"Flat 4",
+"Flat 5",
+"Flat 6",
+"Flat 7",
+"Flat 8"
+];
+
+const INSTRUCTIONS = [
+"...",
+"..."
+];
+
+Changing only these values should update the entire app.
+
+--------------------------------------------------
+
+Responsive Design
+
+Desktop
+
+Tablet
+
+Mobile
+
+Large readable cards
+
+No horizontal scrolling
+
+Proper spacing
+
+--------------------------------------------------
+
+Extra Features
+
+Show current progress in cycle
+
+Example
+
+Flat 5 of 8
+
+Progress bar
+
+Highlight current week
+
+Color-coded countdown
+
+Green
+
+More than 4 days
+
+Orange
+
+2-4 days
+
+Red
+
+Last day
+
+Live countdown updates daily
+
+--------------------------------------------------
+
+Calendar Section
+
+Mini monthly calendar
+
+Highlight
+
+Today
+
+Current duty week
+
+--------------------------------------------------
+
+Timeline
+
+Horizontal timeline
+
+Previous
+
+Current
+
+Next
+
+Flat rotation
+
+--------------------------------------------------
+
+Search
+
+Search any Flat
+
+Shows
+
+Next responsibility date
+
+Previous responsibility
+
+Upcoming dates
+
+--------------------------------------------------
+
+Copy Button
+
+Copy current week's information.
+
+Example output
+
+This week's Water Motor Duty
+
+Week 34
+
+4 Aug - 10 Aug
+
+Responsible Flat
+
+Flat 5
+
+--------------------------------------------------
+
+Share Button
+
+Use Web Share API when supported.
+
+--------------------------------------------------
+
+Export
+
+Download schedule as
+
+CSV
+
+PDF
+
+--------------------------------------------------
+
+Accessibility
+
+WCAG compliant
+
+Keyboard navigation
+
+ARIA labels
+
+Proper semantic HTML
+
+High contrast mode
+
+--------------------------------------------------
+
+Animations
+
+Smooth fade
+
+Card transitions
+
+Button ripple
+
+Hover effects
+
+No excessive animations
+
+--------------------------------------------------
+
+Dark Mode
+
+Remember user preference
+
+--------------------------------------------------
+
+Version
+
+Display footer
+
+Version 1.0.0
+
+Hosted on Vercel
+
+GitHub Repository
+
+Last Updated
+
+--------------------------------------------------
+
+Code Quality
+
+Separate HTML
+
+Separate CSS
+
+Separate JS
+
+Well documented
+
+Reusable functions
+
+No duplicate code
+
+ES6+
+
+Strict mode
+
+--------------------------------------------------
+
+Git Repository Structure
+
+/
+│
+├── index.html
+├── styles.css
+├── script.js
+├── manifest.json
+├── sw.js
+├── favicon.ico
+├── README.md
+├── LICENSE
+└── assets/
+
+--------------------------------------------------
+
+README should include
+
+Project description
+
+Features
+
+Configuration
+
+Deployment
+
+How week calculation works
+
+How to change flats
+
+How to change start date
+
+How to deploy to Vercel
+
+--------------------------------------------------
+
+Deployment
+
+Must work directly by dragging into Vercel.
+
+No build step.
+
+--------------------------------------------------
+
+UI Goal
+
+Professional apartment management dashboard with clean modern cards, responsive layout, intuitive navigation, elegant typography, and polished interactions. The application should feel like a production-ready utility that requires zero maintenance once the initial start date and flat list are configured.
+```

@@ -1,0 +1,16 @@
+Every week one Flat owner puts water motor or is responsibile for turning of OFF and ON water moter or is responsibile for make sure water supply is available for the full building. It is becoming hard to keep a track of our turn, or who is taking care this week. Hence planning to build a fully hostable webpage, fully contained page to see which Tenant is responsible this week. Week starts on Monday, and it should display
+- Todays Date
+- Week Number
+- Count down - number of days pending
+- Flat Number Responsible
+- Set of Instructions
+- Upcoming Button - shows the next cycle of flat nos + dates + weeks - as tiles
+it should be large, medium and small screen compatable
+version control in git, hosted in vercel
+
+---
+
+There are 8 Flats.
+8-July-2026 - Flat 5
+
+---

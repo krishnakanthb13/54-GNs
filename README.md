@@ -25,8 +25,17 @@ A minimal, self-contained PWA for tracking weekly water motor rotation schedule 
 Edit the top of `script.js`:
 
 ```javascript
-const START_DATE = "2026-06-08";
-const FLATS = ["Flat 1", "Flat 2", "Flat 3", "Flat 4", "Flat 5", "Flat 6", "Flat 7", "Flat 8"];
+const START_DATE = "2026-06-01";
+const FLATS = [
+  { name: "Flat 1", tenant: "" },
+  { name: "Flat 2", tenant: "" },
+  { name: "Flat 3", tenant: "" },
+  { name: "Flat 4", tenant: "" },
+  { name: "Flat 5", tenant: "" },
+  { name: "Flat 6", tenant: "" },
+  { name: "Flat 7", tenant: "" },
+  { name: "Flat 8", tenant: "" }
+];
 const INSTRUCTIONS = [
   { title: "Morning", items: ["Turn ON and OFF motor", "Check overhead tank for overflowing"] },
   { title: "Evening", items: ["Turn ON and OFF motor", "Check overhead tank for overflowing"] },
@@ -59,7 +68,11 @@ No hardcoded schedule. The rotation continues indefinitely.
 Edit the `FLATS` array in `script.js`:
 
 ```javascript
-const FLATS = ["Flat A", "Flat B", "Flat C"];
+const FLATS = [
+  { name: "Flat A", tenant: "Alice" },
+  { name: "Flat B", tenant: "Bob" },
+  { name: "Flat C", tenant: "" }
+];
 ```
 
 ### How to change start date

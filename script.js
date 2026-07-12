@@ -1,8 +1,19 @@
 'use strict';
 
 // ===== Configuration =====
-const START_DATE = "2026-06-08";
-const FLATS = ["Flat 1", "Flat 2", "Flat 3", "Flat 4", "Flat 5", "Flat 6", "Flat 7", "Flat 8"];
+const START_DATE = "2026-06-01"; // Adjusted so that 2026-07-13 aligns with Flat 7
+// To change flat order, simply reorder the items in this array.
+// To add a tenant, fill in the 'tenant' property (e.g. { name: "Flat 1", tenant: "John" }).
+const FLATS = [
+  { name: "Flat 1", tenant: "Sathyanarayana G" },
+  { name: "Flat 2", tenant: "Bala Subramaniam" },
+  { name: "Flat 3", tenant: "Balaji" },
+  { name: "Flat 4", tenant: "Gopal" },
+  { name: "Flat 5", tenant: "Kishore" },
+  { name: "Flat 6", tenant: "Venkatesan" },
+  { name: "Flat 7", tenant: "Krishna Kanth B" },
+  { name: "Flat 8", tenant: "Sathyanarayana" }
+];
 const INSTRUCTIONS = [
   { title: "Morning", items: ["Turn ON and OFF motor", "Check overhead tank for overflowing"] },
   { title: "Evening", items: ["Turn ON and OFF motor", "Check overhead tank for overflowing"] },
@@ -68,7 +79,9 @@ function getWeekIndex(date) {
 function getResponsibleFlat(date) {
   const idx = getWeekIndex(date);
   const flatIdx = ((idx % FLATS.length) + FLATS.length) % FLATS.length;
-  return { flat: FLATS[flatIdx], index: flatIdx, weekIdx: idx };
+  const flatData = FLATS[flatIdx];
+  const flatDisplay = flatData.tenant ? `${flatData.name} (${flatData.tenant})` : flatData.name;
+  return { flat: flatDisplay, index: flatIdx, weekIdx: idx, flatName: flatData.name, tenant: flatData.tenant };
 }
 
 function getWeekRange(date) {
@@ -173,13 +186,14 @@ function renderSchedule(containerId, weeks, direction) {
   const html = [];
   for (let i = 1; i <= weeks; i++) {
     const weekDate = addDays(now, direction * i * 7);
-    const { flat } = getResponsibleFlat(weekDate);
+    const { flatName, tenant } = getResponsibleFlat(weekDate);
     const { start, end } = getWeekRange(weekDate);
     const weekNum = getISOWeek(start);
     html.push(`
       <div class="schedule-tr">
         <span class="schedule-td week">W${weekNum}</span>
-        <span class="schedule-td flat">${flat}</span>
+        <span class="schedule-td flat">${flatName}</span>
+        <span class="schedule-td tenant" title="${tenant || ''}">${tenant || '-'}</span>
         <span class="schedule-td from">${fmtWithYear(start)}</span>
         <span class="schedule-td to">${fmtWithYear(end)}</span>
       </div>
@@ -192,11 +206,14 @@ function renderSearch(query) {
   const result = $('#searchResult');
   if (!query.trim()) { result.classList.add('hidden'); return; }
 
-  const flat = FLATS.find(f => f.toLowerCase().includes(query.toLowerCase()));
-  if (!flat) { result.textContent = 'No flat found.'; result.classList.remove('hidden'); return; }
+  const q = query.toLowerCase();
+  const flatObj = FLATS.find(f => f.name.toLowerCase().includes(q) || (f.tenant && f.tenant.toLowerCase().includes(q)));
+  if (!flatObj) { result.textContent = 'No flat found.'; result.classList.remove('hidden'); return; }
+
+  const flatDisplay = flatObj.tenant ? `${flatObj.name} (${flatObj.tenant})` : flatObj.name;
 
   const now = new Date();
-  const flatIdx = FLATS.indexOf(flat);
+  const flatIdx = FLATS.indexOf(flatObj);
   const currentWeek = getWeekIndex(now);
   const currentFlatIdx = ((currentWeek % FLATS.length) + FLATS.length) % FLATS.length;
   let weeksUntil = (flatIdx - currentFlatIdx + FLATS.length) % FLATS.length;
@@ -218,7 +235,7 @@ function renderSearch(query) {
   }
 
   result.innerHTML = `
-    <strong>${flat}</strong>
+    <strong>${flatDisplay}</strong>
     <div style="margin-top:8px;">
       <div>Next duty: <strong>${fmt(nextStart)} – ${fmt(nextEnd)}</strong> (${weeksUntil} week${weeksUntil > 1 ? 's' : ''} away)</div>
       <div>Previous: ${fmt(prevStart)} – ${fmt(prevEnd)}</div>

@@ -2,10 +2,11 @@
   "name": "54GNs Apartments Water Motor Rotation",
   "short_name": "Motor Rotation",
   "description": "Automatically calculates weekly water motor rotation schedule for apartment residents.",
-  "start_url": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#0b1329",
+  "theme_color": "#0b1329",
   "icons": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>",

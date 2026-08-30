@@ -14,3 +14,13 @@ There are 8 Flats.
 8-July-2026 - Flat 5
 
 ---
+
+1. add a button on top of the page, emoji - bill
+2. when clicking on it, it should show a clean display of the content in maintenance.txt
+3. headers start with -, utility name and amount separated by :
+4. at the end or before the next header - it should show an amount total (total expences) and amount divided by 8 (per tenant total)
+5. in the future, I will just update the maintenance.txt, and it should automatically pull up details from it
+
+1. add a couple of more themes in light and dark mode - and the button should cycle through the themes. it should be consistant across all pages.
+
+---

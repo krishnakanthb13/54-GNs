@@ -21,8 +21,12 @@
 
   <header class="header">
     <div class="header-top">
-      <h1 class="title">54GNs Apartments Water Motor Rotation</h1>
+      <div class="header-left">
+        <button id="backBtn" class="back-btn hidden" aria-label="Back to schedule" title="Back to rotation schedule">← Back</button>
+        <h1 id="pageTitle" class="title">54GNs Apartments Water Motor Rotation</h1>
+      </div>
       <div class="header-actions">
+        <button id="billBtn" class="icon-btn" aria-label="Maintenance bills" title="Maintenance bills">🧾</button>
         <button id="themeToggle" class="icon-btn" aria-label="Toggle theme" title="Toggle theme">🌙</button>
         <button id="printBtn" class="icon-btn" aria-label="Print" title="Print">🖨️</button>
       </div>
@@ -30,130 +34,162 @@
   </header>
 
   <main class="container">
-    <!-- Status Card -->
-    <section class="card status-card" aria-label="Current status">
-      <div class="status-grid">
-        <div class="status-item">
-          <span class="status-label">Today</span>
-          <span id="todayDate" class="status-value"></span>
+    <!-- View 1: Rotation Schedule View -->
+    <div id="rotationView" class="view-container">
+      <!-- Status Card -->
+      <section class="card status-card" aria-label="Current status">
+        <div class="status-grid">
+          <div class="status-item">
+            <span class="status-label">Today</span>
+            <span id="todayDate" class="status-value"></span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">ISO Week</span>
+            <span id="weekNumber" class="status-value"></span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Week Period</span>
+            <span id="weekPeriod" class="status-value"></span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Current Flat</span>
+            <span id="currentFlat" class="status-value"></span>
+          </div>
+          <div class="status-item countdown-item">
+            <span class="status-label">Days Remaining</span>
+            <span id="countdown" class="status-value countdown"></span>
+          </div>
         </div>
-        <div class="status-item">
-          <span class="status-label">ISO Week</span>
-          <span id="weekNumber" class="status-value"></span>
+      </section>
+
+      <!-- Responsible Flat Card -->
+      <section class="card responsible-card" aria-label="Current responsible flat">
+        <div class="responsible-header">
+          <span class="responsible-label">Responsible This Week</span>
+          <span id="cycleProgress" class="cycle-badge"></span>
         </div>
-        <div class="status-item">
-          <span class="status-label">Week Period</span>
-          <span id="weekPeriod" class="status-value"></span>
+        <div id="responsibleFlat" class="responsible-flat"></div>
+        <div class="responsible-dates">
+          <span id="dutyStart"></span>
+          <span class="date-separator">→</span>
+          <span id="dutyEnd"></span>
         </div>
-        <div class="status-item">
-          <span class="status-label">Current Flat</span>
-          <span id="currentFlat" class="status-value"></span>
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
         </div>
-        <div class="status-item countdown-item">
-          <span class="status-label">Days Remaining</span>
-          <span id="countdown" class="status-value countdown"></span>
+      </section>
+
+      <!-- Actions -->
+      <section class="actions-row" aria-label="Actions">
+        <button id="copyBtn" class="action-btn">📋 Copy</button>
+        <button id="shareBtn" class="action-btn hidden" aria-label="Share">📤 Share</button>
+        <button id="exportCsvBtn" class="action-btn">📊 CSV</button>
+        <button id="exportPdfBtn" class="action-btn">📄 PDF</button>
+      </section>
+
+      <!-- Timeline -->
+      <section class="card timeline-card" aria-label="Rotation timeline">
+        <h2 class="card-title">Rotation Timeline</h2>
+        <div id="timeline" class="timeline"></div>
+      </section>
+
+      <!-- Search -->
+      <section class="card search-card" aria-label="Search flat">
+        <h2 class="card-title">Search Any Flat</h2>
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Type flat name..." aria-label="Search flat" autocomplete="off">
         </div>
-      </div>
-    </section>
+        <div id="searchResult" class="search-result hidden"></div>
+      </section>
 
-    <!-- Responsible Flat Card -->
-    <section class="card responsible-card" aria-label="Current responsible flat">
-      <div class="responsible-header">
-        <span class="responsible-label">Responsible This Week</span>
-        <span id="cycleProgress" class="cycle-badge"></span>
-      </div>
-      <div id="responsibleFlat" class="responsible-flat"></div>
-      <div class="responsible-dates">
-        <span id="dutyStart"></span>
-        <span class="date-separator">→</span>
-        <span id="dutyEnd"></span>
-      </div>
-      <div class="progress-bar">
-        <div id="progressFill" class="progress-fill"></div>
-      </div>
-    </section>
+      <!-- Instructions Card -->
+      <section class="card instructions-card" aria-label="Instructions">
+        <h2 class="card-title">Instructions</h2>
+        <div id="instructionsList" class="instructions-grid"></div>
+      </section>
 
-    <!-- Actions -->
-    <section class="actions-row" aria-label="Actions">
-      <button id="copyBtn" class="action-btn">📋 Copy</button>
-      <button id="shareBtn" class="action-btn hidden" aria-label="Share">📤 Share</button>
-      <button id="exportCsvBtn" class="action-btn">📊 CSV</button>
-      <button id="exportPdfBtn" class="action-btn">📄 PDF</button>
-    </section>
-
-    <!-- Timeline -->
-    <section class="card timeline-card" aria-label="Rotation timeline">
-      <h2 class="card-title">Rotation Timeline</h2>
-      <div id="timeline" class="timeline"></div>
-    </section>
-
-    <!-- Search -->
-    <section class="card search-card" aria-label="Search flat">
-      <h2 class="card-title">Search Any Flat</h2>
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Type flat name..." aria-label="Search flat" autocomplete="off">
-      </div>
-      <div id="searchResult" class="search-result hidden"></div>
-    </section>
-
-    <!-- Instructions Card -->
-    <section class="card instructions-card" aria-label="Instructions">
-      <h2 class="card-title">Instructions</h2>
-      <div id="instructionsList" class="instructions-grid"></div>
-    </section>
-
-    <!-- Mini Calendar -->
-    <section class="card calendar-card" aria-label="Monthly calendar">
-      <h2 id="calMonth" class="card-title"></h2>
-      <div class="calendar-grid">
-        <span class="cal-day-header">Mo</span>
-        <span class="cal-day-header">Tu</span>
-        <span class="cal-day-header">We</span>
-        <span class="cal-day-header">Th</span>
-        <span class="cal-day-header">Fr</span>
-        <span class="cal-day-header">Sa</span>
-        <span class="cal-day-header">Su</span>
-        <div id="calDays" class="cal-days"></div>
-      </div>
-    </section>
-
-    <!-- Upcoming Schedule -->
-    <section class="card schedule-card" aria-label="Upcoming schedule">
-      <h2 class="card-title">Upcoming Weeks</h2>
-      <div class="schedule-table">
-        <div class="schedule-thead">
-          <span class="schedule-th">Week</span>
-          <span class="schedule-th">Flat</span>
-          <span class="schedule-th">Tenant</span>
-          <span class="schedule-th">From</span>
-          <span class="schedule-th">To</span>
+      <!-- Mini Calendar -->
+      <section class="card calendar-card" aria-label="Monthly calendar">
+        <h2 id="calMonth" class="card-title"></h2>
+        <div class="calendar-grid">
+          <span class="cal-day-header">Mo</span>
+          <span class="cal-day-header">Tu</span>
+          <span class="cal-day-header">We</span>
+          <span class="cal-day-header">Th</span>
+          <span class="cal-day-header">Fr</span>
+          <span class="cal-day-header">Sa</span>
+          <span class="cal-day-header">Su</span>
+          <div id="calDays" class="cal-days"></div>
         </div>
-        <div id="upcomingBody" class="schedule-tbody"></div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Previous Schedule -->
-    <section class="card schedule-card" aria-label="Previous schedule">
-      <h2 class="card-title">Previous Weeks</h2>
-      <div class="schedule-table">
-        <div class="schedule-thead">
-          <span class="schedule-th">Week</span>
-          <span class="schedule-th">Flat</span>
-          <span class="schedule-th">Tenant</span>
-          <span class="schedule-th">From</span>
-          <span class="schedule-th">To</span>
+      <!-- Upcoming Schedule -->
+      <section class="card schedule-card" aria-label="Upcoming schedule">
+        <h2 class="card-title">Upcoming Weeks</h2>
+        <div class="schedule-table">
+          <div class="schedule-thead">
+            <span class="schedule-th">Week</span>
+            <span class="schedule-th">Flat</span>
+            <span class="schedule-th">Tenant</span>
+            <span class="schedule-th">From</span>
+            <span class="schedule-th">To</span>
+          </div>
+          <div id="upcomingBody" class="schedule-tbody"></div>
         </div>
-        <div id="previousBody" class="schedule-tbody"></div>
-      </div>
-    </section>
+      </section>
+
+      <!-- Previous Schedule -->
+      <section class="card schedule-card" aria-label="Previous schedule">
+        <h2 class="card-title">Previous Weeks</h2>
+        <div class="schedule-table">
+          <div class="schedule-thead">
+            <span class="schedule-th">Week</span>
+            <span class="schedule-th">Flat</span>
+            <span class="schedule-th">Tenant</span>
+            <span class="schedule-th">From</span>
+            <span class="schedule-th">To</span>
+          </div>
+          <div id="previousBody" class="schedule-tbody"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- View 2: Maintenance Bills View -->
+    <div id="billsView" class="view-container hidden">
+      <!-- Summary Card -->
+      <section class="card bill-summary-card" aria-label="Maintenance summary">
+        <h2 class="card-title">Maintenance Statement Summary</h2>
+        <div id="billStatsGrid" class="status-grid bill-stats-grid"></div>
+      </section>
+
+      <!-- Actions -->
+      <section class="actions-row" aria-label="Bill actions">
+        <button id="billCopyBtn" class="action-btn">📋 Copy Summary</button>
+        <button id="billPrintBtn" class="action-btn">📄 PDF / Print</button>
+      </section>
+
+      <!-- Search Expenses -->
+      <section class="card search-card" aria-label="Search expenses">
+        <h2 class="card-title">Search Expenses</h2>
+        <div class="search-box">
+          <input type="text" id="billSearchInput" placeholder="Type month or utility (e.g. Electric, May)..." aria-label="Search maintenance bills" autocomplete="off">
+        </div>
+      </section>
+
+      <!-- Bills List -->
+      <div id="billContent" class="bills-list"></div>
+    </div>
   </main>
 
   <footer class="footer">
-    <p>Version v0.0.4 · Hosted on Vercel · <a href="https://github.com/krishnakanthb13/54-GNs" target="_blank"
+    <p>Version v0.0.5 · Hosted on Vercel · <a href="https://github.com/krishnakanthb13/54-GNs" target="_blank"
         rel="noopener">GitHub Repository</a></p>
     <p>Made with 🤖 AI + 🧠 brain by <strong>krishnakanthb13</strong></p>
     <p id="lastUpdated"></p>
   </footer>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
   <script src="script.js"></script>
 </body>

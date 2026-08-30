@@ -246,6 +246,333 @@ function renderSearch(query) {
   result.classList.remove('hidden');
 }
 
+// ===== Toast System =====
+function showToast(message, icon = '') {
+  const container = $('#toastContainer');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `${icon ? `<span>${icon}</span>` : ''}<span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.remove();
+  }, 2500);
+}
+
+// ===== Theme System =====
+const THEMES = [
+  { id: 'dark-slate', name: 'Dark Slate', icon: '🌙', themeColor: '#0b1329', isDark: true },
+  { id: 'dark-violet', name: 'Obsidian Violet', icon: '🔮', themeColor: '#0d0a1a', isDark: true },
+  { id: 'dark-emerald', name: 'Forest Emerald', icon: '🌲', themeColor: '#061712', isDark: true },
+  { id: 'light-clean', name: 'Pure Sky', icon: '☀️', themeColor: '#f8fafc', isDark: false },
+  { id: 'light-warm', name: 'Warm Sand', icon: '☕', themeColor: '#faf6f0', isDark: false },
+  { id: 'light-mint', name: 'Fresh Mint', icon: '🍃', themeColor: '#f0fdf4', isDark: false }
+];
+
+function applyTheme(themeId, showToastNotification = false) {
+  let theme = THEMES.find(t => t.id === themeId);
+  if (!theme) {
+    if (themeId === 'dark') theme = THEMES[0];
+    else if (themeId === 'light') theme = THEMES[3];
+    else theme = THEMES[0];
+  }
+  document.documentElement.setAttribute('data-theme', theme.id);
+  localStorage.setItem('theme', theme.id);
+
+  const themeToggle = $('#themeToggle');
+  if (themeToggle) {
+    themeToggle.textContent = theme.icon;
+    themeToggle.setAttribute('title', `Theme: ${theme.name} (Click to switch)`);
+    themeToggle.setAttribute('aria-label', `Current theme: ${theme.name}. Click to switch.`);
+  }
+
+  const metaTheme = $('meta[name="theme-color"]');
+  if (metaTheme) {
+    metaTheme.setAttribute('content', theme.themeColor);
+  }
+
+  if (showToastNotification) {
+    showToast(`Theme: ${theme.name} (${theme.isDark ? 'Dark' : 'Light'})`, theme.icon);
+  }
+}
+
+function cycleTheme() {
+  const currentId = document.documentElement.getAttribute('data-theme') || 'dark-slate';
+  const currentIndex = THEMES.findIndex(t => t.id === currentId);
+  const nextIndex = (currentIndex + 1) % THEMES.length;
+  applyTheme(THEMES[nextIndex].id, true);
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('theme') || 'dark-slate';
+  applyTheme(saved, false);
+}
+
+// ===== Bill Modal & Maintenance Parser =====
+let currentBillGroups = [];
+let rawBillText = '';
+
+const DEFAULT_MAINTENANCE_TEXT = `- September 2026
+
+- August 2026
+House Keeping: 3000
+Electricity Bill: 906
+Broom Stick: 200
+
+- July 2026
+House Keeping: 3000
+
+- 29 July 2026
+Drainage Cleaning: 2500
+
+- June 2026
+House Keeping: 3000
+Electricity Bill: 823
+
+- May 2026
+House Keeping: 2000
+Drainage Cleaning: 1200
+
+- April 2026
+House Keeping: 3000
+Electricity Bill: 1729
+Flowers: 250
+
+- 12 April 2026
+Sump & Tank Cleaning: 3500
+
+- March 2026
+House Keeping: 3000
+Flowers: 110
+EB Expenses: 100
+Broom Stick: 200
+
+- 26 March 2026
+Main Gate Keys: 1550`;
+
+function isSpecificDate(header) {
+  // If header starts with a digit (e.g. "12 April 2026", "29 July 2026", "26 March 2026")
+  return /^\d/.test(header.trim());
+}
+
+function formatINR(val) {
+  const isFraction = val % 1 !== 0;
+  return '₹' + val.toLocaleString('en-IN', {
+    minimumFractionDigits: isFraction ? 2 : 0,
+    maximumFractionDigits: 2
+  });
+}
+
+function parseMaintenance(text) {
+  const groups = [];
+  let current = null;
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.startsWith('-')) {
+      if (current) groups.push(current);
+      current = { header: line.replace(/^-+\s*/, '').trim(), items: [] };
+    } else if (current && line.includes(':')) {
+      const idx = line.indexOf(':');
+      const name = line.slice(0, idx).trim();
+      const valStr = line.slice(idx + 1).replace(/[^\d.]/g, '');
+      const val = parseFloat(valStr);
+      if (name && !isNaN(val)) {
+        current.items.push({ name, amount: val });
+      }
+    }
+  }
+  if (current) groups.push(current);
+  return groups;
+}
+
+function renderBillStats(groups) {
+  const statsContainer = $('#billStatsGrid');
+  if (!statsContainer) return;
+  const activeGroups = groups.filter(g => g.items.length > 0);
+  const totalAll = groups.reduce((acc, g) => acc + g.items.reduce((s, it) => s + it.amount, 0), 0);
+  const perTenantAll = totalAll / 8;
+  const monthlyCount = activeGroups.filter(g => !isSpecificDate(g.header)).length;
+  const specialCount = activeGroups.filter(g => isSpecificDate(g.header)).length;
+
+  statsContainer.innerHTML = `
+    <div class="status-item">
+      <span class="status-label">Total Expenses</span>
+      <span class="status-value">${formatINR(totalAll)}</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Per Flat (÷8)</span>
+      <span class="status-value" style="color:var(--accent); font-weight:700;">${formatINR(perTenantAll)}</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Recorded Cycles</span>
+      <span class="status-value" style="font-size:0.86rem;">${monthlyCount} Monthly · ${specialCount} Special</span>
+    </div>
+  `;
+}
+
+function renderBillGroups(groups, filterQuery = '') {
+  const container = $('#billContent');
+  if (!groups.length) {
+    container.innerHTML = '<div class="card bill-empty-state">No billing data found in maintenance.txt</div>';
+    return;
+  }
+
+  const q = filterQuery.toLowerCase().trim();
+  let displayedGroups = groups;
+  if (q) {
+    displayedGroups = groups.map(g => {
+      const headerMatches = g.header.toLowerCase().includes(q);
+      const filteredItems = g.items.filter(it => it.name.toLowerCase().includes(q));
+      if (headerMatches) return g;
+      if (filteredItems.length > 0) return { header: g.header, items: filteredItems };
+      return null;
+    }).filter(Boolean);
+  }
+
+  if (!displayedGroups.length) {
+    container.innerHTML = `<div class="card bill-empty-state">No entries matching "${filterQuery}"</div>`;
+    return;
+  }
+
+  container.innerHTML = displayedGroups.map(g => {
+    const isSpecial = isSpecificDate(g.header);
+    const total = g.items.reduce((s, it) => s + it.amount, 0);
+    const perTenant = total / 8;
+
+    // If no entries, do not show total or per flat share
+    if (g.items.length === 0) {
+      return `
+        <section class="card bill-period-card ${isSpecial ? 'bill-special-card' : ''}">
+          <div class="bill-period-header">
+            <div class="bill-period-header-left">
+              <h2 class="card-title bill-period-title" style="margin-bottom:0;">${isSpecial ? '🛠️' : '📅'} ${g.header}</h2>
+              ${isSpecial ? '<span class="bill-special-badge">⚡ Special Expense</span>' : '<span class="bill-monthly-badge">📅 Monthly</span>'}
+            </div>
+            <span class="bill-period-empty-badge">No entries</span>
+          </div>
+          <div class="bill-empty-row">No expenses recorded for this period</div>
+        </section>
+      `;
+    }
+
+    const rowsHtml = g.items.map(it => `
+      <div class="bill-table-row">
+        <span class="bill-item-name"><span class="bill-item-bullet">•</span> ${it.name}</span>
+        <span class="bill-item-amount">${formatINR(it.amount)}</span>
+      </div>
+    `).join('');
+
+    return `
+      <section class="card bill-period-card ${isSpecial ? 'bill-special-card' : ''}">
+        <div class="bill-period-header">
+          <div class="bill-period-header-left">
+            <h2 class="card-title bill-period-title" style="margin-bottom:0;">${isSpecial ? '🛠️' : '📅'} ${g.header}</h2>
+            ${isSpecial ? '<span class="bill-special-badge">⚡ Special Expense</span>' : '<span class="bill-monthly-badge">📅 Monthly</span>'}
+          </div>
+          <span class="bill-period-badge">${g.items.length} item${g.items.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="bill-table">
+          <div class="bill-table-head">
+            <span>${isSpecial ? 'Special Particulars / Work Done' : 'Utility / Particulars'}</span>
+            <span>Amount</span>
+          </div>
+          <div class="bill-table-body">
+            ${rowsHtml}
+          </div>
+          <div class="bill-period-footer">
+            <div class="bill-subtotal-row">
+              <span>${isSpecial ? 'Special Total Expenses' : 'Monthly Total Expenses'}</span>
+              <span class="bill-subtotal-val">${formatINR(total)}</span>
+            </div>
+            <div class="bill-tenant-row">
+              <span>👤 Per Flat Share (÷8)</span>
+              <span class="bill-tenant-val">${formatINR(perTenant)}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }).join('');
+}
+
+async function loadAndRenderBills() {
+  const content = $('#billContent');
+  let text = '';
+  try {
+    const res = await fetch(`./maintenance.txt?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Fetch failed');
+    text = await res.text();
+  } catch (err) {
+    text = DEFAULT_MAINTENANCE_TEXT;
+  }
+
+  if (text && text.trim()) {
+    rawBillText = text;
+    currentBillGroups = parseMaintenance(rawBillText);
+    renderBillStats(currentBillGroups);
+    const searchVal = $('#billSearchInput') ? $('#billSearchInput').value : '';
+    renderBillGroups(currentBillGroups, searchVal);
+  } else {
+    content.innerHTML = '<div class="card bill-empty-state">No billing data available.</div>';
+  }
+}
+
+// ===== Page Views Navigation =====
+function showView(viewName, updateHistory = true) {
+  const rotationView = $('#rotationView');
+  const billsView = $('#billsView');
+  const backBtn = $('#backBtn');
+  const pageTitle = $('#pageTitle');
+
+  if (viewName === 'bills') {
+    rotationView.classList.add('hidden');
+    billsView.classList.remove('hidden');
+    backBtn.classList.remove('hidden');
+    pageTitle.textContent = 'Maintenance Bills';
+    if (updateHistory && window.location.hash !== '#bills') {
+      history.pushState({ view: 'bills' }, '', '#bills');
+    }
+    loadAndRenderBills();
+  } else {
+    billsView.classList.add('hidden');
+    rotationView.classList.remove('hidden');
+    backBtn.classList.add('hidden');
+    pageTitle.textContent = '54GNs Apartments Water Motor Rotation';
+    if (updateHistory && window.location.hash === '#bills') {
+      history.pushState('', document.title, window.location.pathname + window.location.search);
+    }
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyBillsSummary() {
+  if (!currentBillGroups.length) return;
+  let summary = `54GNs Apartments - Maintenance Bills Summary\n\n`;
+  let grandTotal = 0;
+  for (const g of currentBillGroups) {
+    if (g.items.length === 0) continue;
+    const tot = g.items.reduce((s, it) => s + it.amount, 0);
+    const perTen = tot / 8;
+    grandTotal += tot;
+    const isSpecial = isSpecificDate(g.header);
+    summary += `${isSpecial ? '⚡ [SPECIAL EXPENSE] ' : '📅 '}${g.header}\n`;
+    for (const it of g.items) {
+      summary += `  • ${it.name}: ${formatINR(it.amount)}\n`;
+    }
+    summary += `  Total: ${formatINR(tot)} | Per Flat (÷8): ${formatINR(perTen)}\n\n`;
+  }
+  summary += `💰 Grand Total: ${formatINR(grandTotal)} | Overall Per Flat: ${formatINR(grandTotal / 8)}`;
+
+  navigator.clipboard.writeText(summary).then(() => {
+    showToast('Copied bill summary to clipboard!', '📋');
+  });
+}
+
+function printCurrentView() {
+  window.print();
+}
+
 // ===== Actions =====
 function copyWeekInfo() {
   const now = new Date();
@@ -256,6 +583,7 @@ function copyWeekInfo() {
   navigator.clipboard.writeText(text).then(() => {
     const btn = $('#copyBtn');
     btn.textContent = '✅ Copied!';
+    showToast('Copied rotation details!', '📋');
     setTimeout(() => { btn.textContent = '📋 Copy'; }, 1500);
   });
 }
@@ -269,7 +597,9 @@ function shareWeekInfo() {
   if (navigator.share) {
     navigator.share({ title: 'Water Motor Rotation', text });
   } else {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Copied to clipboard!', '📋');
+    });
   }
 }
 
@@ -290,27 +620,7 @@ function exportCSV() {
   a.click();
 }
 
-function exportPDF() {
-  window.print();
-}
-
-function toggleTheme() {
-  const html = document.documentElement;
-  const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  $('#themeToggle').textContent = isDark ? '☀️' : '🌙';
-}
-
-function loadTheme() {
-  const saved = localStorage.getItem('theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-    $('#themeToggle').textContent = saved === 'dark' ? '🌙' : '☀️';
-  }
-}
-
-// ===== Event Listeners =====
+// ===== Event Listeners & Init =====
 function init() {
   loadTheme();
   renderStatus();
@@ -320,15 +630,47 @@ function init() {
   renderTimeline();
   renderSchedule('#upcomingBody', UPCOMING_WEEKS, 1);
   renderSchedule('#previousBody', PREVIOUS_WEEKS, -1);
+  loadAndRenderBills();
 
   $('#lastUpdated').textContent = `Last Updated: ${fmtFull(new Date())}`;
 
-  $('#themeToggle').addEventListener('click', toggleTheme);
-  $('#printBtn').addEventListener('click', exportPDF);
+  // Header events & Page views
+  $('#themeToggle').addEventListener('click', cycleTheme);
+  $('#printBtn').addEventListener('click', printCurrentView);
+  $('#billBtn').addEventListener('click', () => showView('bills'));
+  $('#backBtn').addEventListener('click', () => showView('rotation'));
+  $('#billCopyBtn').addEventListener('click', copyBillsSummary);
+  $('#billPrintBtn').addEventListener('click', printCurrentView);
+
+  // Search filter for bills
+  const billSearch = $('#billSearchInput');
+  if (billSearch) {
+    let billSearchTimer;
+    billSearch.addEventListener('input', (e) => {
+      clearTimeout(billSearchTimer);
+      billSearchTimer = setTimeout(() => {
+        renderBillGroups(currentBillGroups, e.target.value);
+      }, 150);
+    });
+  }
+
+  // Hash deep-linking
+  if (window.location.hash === '#bills') {
+    showView('bills', false);
+  }
+  window.addEventListener('popstate', () => {
+    if (window.location.hash === '#bills') {
+      showView('bills', false);
+    } else {
+      showView('rotation', false);
+    }
+  });
+
+  // Schedule page actions
   $('#copyBtn').addEventListener('click', copyWeekInfo);
   $('#shareBtn').addEventListener('click', shareWeekInfo);
   $('#exportCsvBtn').addEventListener('click', exportCSV);
-  $('#exportPdfBtn').addEventListener('click', exportPDF);
+  $('#exportPdfBtn').addEventListener('click', printCurrentView);
 
   if (navigator.share) $('#shareBtn').classList.remove('hidden');
 
@@ -352,5 +694,5 @@ document.addEventListener('DOMContentLoaded', init);
 
 // Service Worker
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => { });
+  navigator.serviceWorker.register('./sw.js').catch(() => { });
 }

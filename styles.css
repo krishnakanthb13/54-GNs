@@ -1274,6 +1274,23 @@ body {
   text-align: center;
 }
 
+.bill-note-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.86rem;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.bill-note-body p {
+  margin: 0;
+}
+
+.bill-note-body strong {
+  color: var(--text);
+}
+
 .bill-error-state {
   font-size: 0.9rem;
   color: var(--red);

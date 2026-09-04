@@ -3,9 +3,10 @@
 [![GitHub Repository](https://img.shields.io/badge/GitHub-krishnakanthb13%2F54--GNs-blue?logo=github)](https://github.com/krishnakanthb13/54-GNs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A minimal, self-contained, high-performance Progressive Web App (PWA) for managing weekly water motor rotation duties and tracking building maintenance bills for apartment residents.
+A minimal, self-contained, high-performance Progressive Web App (PWA) for managing weekly water motor rotation duties and tracking building maintenance bills and collections for apartment residents.
 
 - **Repository**: [https://github.com/krishnakanthb13/54-GNs](https://github.com/krishnakanthb13/54-GNs)
+- **Live**: `https://54-gn-s.vercel.app/#bills` opens the Bills page directly
 
 ---
 
@@ -23,17 +24,29 @@ A minimal, self-contained, high-performance Progressive Web App (PWA) for managi
 - **Export & Share**: Quick actions to Copy week summary, Native Share (WhatsApp/mobile), CSV Export, and PDF/Print.
 
 ### 🧾 Maintenance Bills (`maintenance.txt`)
-- **Auto-Synced with `maintenance.txt`**: Simply edit or update `maintenance.txt` to add new months or expenses; the app dynamically pulls and parses updates without rebuilds.
-- **Dedicated Page View with Back Navigation**: Seamless full-page view matching the rotation dashboard cards, with a header `← Back` button and direct URL deep-linking (`#bills`).
-- **Dynamic Expense Calculations**:
-  - Automatically totals expenses for each active billing period (`- Month Year`).
-  - Calculates the **Per-Tenant Share (÷ 8)** with Indian Rupee formatting (`₹`).
-  - For months with no expenses recorded (e.g. `- July 2026`), totals are cleanly omitted.
-- **KPI Summary Grid**: Top overview card displaying **Total Recorded Expenses**, **Overall Per-Tenant Share**, and **Active Billing Cycles**.
-- **Live Search & Filter**: Instant search box to filter by month or specific utility (e.g., `Electric`, `Drainage`, `July`).
+- **Auto-Synced with `maintenance.txt`**: Simply edit `maintenance.txt` to add expenses or collections; the app fetches it with cache-busting (`?t=Date.now()`) and the Service Worker never caches it, so updates appear immediately without rebuilds.
+- **Dedicated Bills Page (`#bills`)**: Full-page view with header `← Back` button and URL deep-linking (`#bills`). Opened from the header 🧾 button.
+- **Expenses / Paid Tabs (inside Bills page only)**:
+  - `📅 Expenses` (default) — existing expense behavior, unchanged.
+  - `✅ Paid` — separate collections view with its own summary, search, and list.
+  - Switching tabs swaps the summary card, search box, and list; the Copy button label follows the active tab (`📋 Copy Summary` / `📋 Copy Paid Summary`).
+- **Expenses View**:
+  - Automatically totals each billing period (`- Month Year`) and calculates **Per Flat Share (÷ 8)** with Indian Rupee formatting (`₹`).
+  - Monthly headers (e.g. `- August 2026`) show a `📅 Monthly` tag; date headers (e.g. `- 29 July 2026`) show a `⚡ Additional Expense` amber card.
+  - Empty months (e.g. `- September 2026` with no items) render as `No entries` with no totals.
+  - Summary card: **Total Expenses**, **Per Flat (÷8)**, **Recorded Cycles** (`X Monthly · Y Additional`).
+  - Live search filters by month or utility (e.g. `Electric`, `May`).
+- **Paid View**:
+  - Parses collection lines under `= Paid =` (format `- DATE: TYPE: AMOUNT`, e.g. `- 4 September 2026: Monthly: 513`).
+  - Lines starting with `+` are treated as **Additional** collections (amber styling, ⚡ badge) — e.g. `+ 29 July 2026: Drainage: 315`.
+  - Each entry renders as a card: monthly entries get a green-accent card with a 💰 type badge; additional entries get an **orange-accent card** (full amber tint) with a ⚡ type badge.
+  - Summary card: **Total Collected**, **Entries**, **Records ⓘ** — Records shows counts like `6 Monthly · 3 Additional`; the ⓘ button opens a **Paid Breakdown modal** with each collection type on its own line (💰 for monthly, ⚡ for additional) plus a Total row.
+  - Live search filters by date or type (e.g. `Monthly`, `Drainage`, `July`).
+  - Empty state: `No paid collections recorded yet.`
 - **One-Click Actions**:
-  - 📋 **Copy Summary**: Formats all billing periods into a clean clipboard message for WhatsApp.
-  - 🖨️ **Print Bills**: Clean, paper-optimized layout for printing or saving to PDF.
+  - 📋 **Copy Summary**: active-tab aware — Expenses formats every period with totals for WhatsApp; Paid lists each `✅ date - type: amount` (adding `(Additional)` to `+` lines) plus a total and separate `📅 Monthly:` / `⚡ Additional:` subtotals.
+  - 🖨️ **PDF / Print**: print-optimized layout; header, footer, actions, search, tabs, and modal are hidden in print.
+- **Toast Notifications**: copy confirmations, theme changes, and Paid info feedback via bottom toasts.
 
 ### 🎨 Multi-Theme System
 Cycles through **6 curated themes** across dark and light modes with persistent `localStorage` preference and mobile `<meta name="theme-color">` syncing:
@@ -85,9 +98,20 @@ const PREVIOUS_WEEKS = 8;
 
 ## 📝 Updating Maintenance Bills (`maintenance.txt`)
 
-You can edit [`maintenance.txt`](maintenance.txt) anytime using this format:
+Edit [`maintenance.txt`](maintenance.txt) anytime using this format:
 
 ```text
+= Paid =
+
+- 4 September 2026: Monthly: 513
+- 31 July 2026: Monthly: 500
++ 29 July 2026: Drainage: 315
+- 1 July 2026: Monthly: 65
+- 30 April 2026: Monthly: 628
++ 11 April 2026: Sump & Tank Cleaning: 500
+
+= Expenses =
+
 - September 2026
 
 - August 2026
@@ -128,11 +152,11 @@ Main Gate Keys: 1550
 ```
 
 ### Syntax Rules:
-1. **Monthly Cycles**: Headers starting with a month name (e.g. `- April 2026`, `- March 2026`) are displayed with a `📅 Monthly` tag.
-2. **Special / Ad-hoc Expenses**: Headers starting with a specific date (e.g. `- 12 April 2026`, `- 29 July 2026`, `- 26 March 2026`) are automatically highlighted as **`⚡ Special Expense`** with a distinct amber accent border, custom work particulars, and dedicated totals.
-3. **Line Items**: Use `Utility Name: Amount` (e.g. `House Keeping: 3000`, `Sump & Tank Cleaning: 3500`).
-4. Leave empty lines between billing periods for readability.
-5. If a month has no expenses yet, leave it empty under the header (e.g. `- September 2026`), and it will display cleanly without empty total bars.
+1. **Section Headers**: `= Paid =` and `= Expenses =` (case-insensitive, `=` on both sides). Everything under `= Paid =` is parsed as collections; everything under `= Expenses =` is parsed as expenses. If no headers exist, the whole file is treated as Expenses (backward compatible).
+2. **Paid Lines**: `- DATE: TYPE: AMOUNT` (e.g. `- 4 September 2026: Monthly: 513`). Date is everything before the second-last colon, type is the second-last segment, amount is the last number. Two-segment lines (`- 31 July 2026: 500`) fall back to type `Paid`. A `+` prefix marks the entry as **Additional** (e.g. `+ 29 July 2026: Drainage: 315`) — shown with ⚡ amber styling instead of the standard 💰 green badge.
+3. **Expense Groups**: `- Month Year` headers (e.g. `- April 2026`) display a `📅 Monthly` tag; `- DD Month Year` headers (e.g. `- 12 April 2026`) are auto-detected as **`⚡ Additional Expense`** with amber styling.
+4. **Expense Line Items**: `Utility Name: Amount` (e.g. `House Keeping: 3000`).
+5. Leave blank lines between periods for readability; empty months render as `No entries` with no totals.
 
 ---
 
@@ -140,15 +164,21 @@ Main Gate Keys: 1550
 
 ```
 /
-├── index.html        # Semantic HTML5 layout & view containers
-├── styles.css        # CSS variables, 6 theme palettes, card layouts, responsive grid, print styles
-├── script.js         # Rotation math, maintenance parser, theme cycler, view router
-├── maintenance.txt   # Maintenance bill entries & utility expenses
+├── index.html        # Semantic HTML5: rotation view, tabbed Bills view (Expenses/Paid panes), Paid breakdown modal, toast container
+├── styles.css        # CSS variables, 6 theme palettes, card layouts, bill tabs, paid cards, modal, toast, responsive grid, print styles
+├── script.js         # Rotation math, section splitter + expense/paid parsers, stats + list renderers, tab router, modal, theme cycler, view router
+├── maintenance.txt   # `= Paid =` collections + `= Expenses =` billing groups (never cached by SW)
 ├── manifest.json     # Progressive Web App (PWA) configuration (relative paths)
-├── sw.js             # Service Worker for offline caching with relative paths
+├── sw.js             # Service Worker for offline caching with relative paths (bypasses maintenance.txt)
 ├── README.md         # Documentation & guide
 └── LICENSE           # MIT License
 ```
+
+Key DOM/JS hooks:
+- Bills tabs: `#expensesTabBtn`, `#paidTabBtn`, `#expensesPane`, `#paidPane`, `#expensesSummaryCard`, `#paidSummaryCard`
+- Expenses: `#billStatsGrid`, `#billSearchInput`, `#billContent`
+- Paid: `#paidStatsGrid`, `#paidSearchInput`, `#paidContent`, `#paidInfoBtn`, `#paidBreakdownModal`, `#paidBreakdownBody`, `#paidBreakdownClose`
+- Views: `#rotationView`, `#billsView`, `#backBtn`, `#billBtn`, deep-link `#bills`
 
 ---
 

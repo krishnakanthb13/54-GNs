@@ -156,10 +156,22 @@
 
     <!-- View 2: Maintenance Bills View -->
     <div id="billsView" class="view-container hidden">
-      <!-- Summary Card -->
-      <section class="card bill-summary-card" aria-label="Maintenance summary">
+      <!-- Expenses / Paid Tabs (only inside Bills page) -->
+      <section class="bill-tabs" aria-label="Bills sections">
+        <button id="expensesTabBtn" class="bill-tab-btn active">📅 Expenses</button>
+        <button id="paidTabBtn" class="bill-tab-btn">✅ Paid</button>
+      </section>
+
+      <!-- Summary Card (Expenses) -->
+      <section id="expensesSummaryCard" class="card bill-summary-card" aria-label="Maintenance summary">
         <h2 class="card-title">Maintenance Statement Summary</h2>
         <div id="billStatsGrid" class="status-grid bill-stats-grid"></div>
+      </section>
+
+      <!-- Summary Card (Paid) -->
+      <section id="paidSummaryCard" class="card bill-summary-card hidden" aria-label="Paid summary">
+        <h2 class="card-title">Paid Collection Summary</h2>
+        <div id="paidStatsGrid" class="status-grid bill-stats-grid"></div>
       </section>
 
       <!-- Actions -->
@@ -168,25 +180,53 @@
         <button id="billPrintBtn" class="action-btn">📄 PDF / Print</button>
       </section>
 
-      <!-- Search Expenses -->
-      <section class="card search-card" aria-label="Search expenses">
-        <h2 class="card-title">Search Expenses</h2>
-        <div class="search-box">
-          <input type="text" id="billSearchInput" placeholder="Type month or utility (e.g. Electric, May)..." aria-label="Search maintenance bills" autocomplete="off">
-        </div>
-      </section>
+      <!-- Expenses Pane -->
+      <div id="expensesPane">
+        <!-- Search Expenses -->
+        <section class="card search-card" aria-label="Search expenses">
+          <h2 class="card-title">Search Expenses</h2>
+          <div class="search-box">
+            <input type="text" id="billSearchInput" placeholder="Type month or utility (e.g. Electric, May)..." aria-label="Search maintenance bills" autocomplete="off">
+          </div>
+        </section>
 
-      <!-- Bills List -->
-      <div id="billContent" class="bills-list"></div>
+        <!-- Bills List -->
+        <div id="billContent" class="bills-list"></div>
+      </div>
+
+      <!-- Paid Pane -->
+      <div id="paidPane" class="hidden">
+        <!-- Search Paid -->
+        <section class="card search-card" aria-label="Search paid collections">
+          <h2 class="card-title">Search Paid</h2>
+          <div class="search-box">
+            <input type="text" id="paidSearchInput" placeholder="Type date or type (e.g. Monthly, Drainage, July)..." aria-label="Search paid collections" autocomplete="off">
+          </div>
+        </section>
+
+        <!-- Paid List -->
+        <div id="paidContent" class="bills-list"></div>
+      </div>
     </div>
   </main>
 
   <footer class="footer">
-    <p>Version v0.0.5 · Hosted on Vercel · <a href="https://github.com/krishnakanthb13/54-GNs" target="_blank"
+    <p>Version v0.0.6 · Hosted on Vercel · <a href="https://github.com/krishnakanthb13/54-GNs" target="_blank"
         rel="noopener">GitHub Repository</a></p>
     <p>Made with 🤖 AI + 🧠 brain by <strong>krishnakanthb13</strong></p>
     <p id="lastUpdated"></p>
   </footer>
+
+  <!-- Paid Breakdown Modal -->
+  <div id="paidBreakdownModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Paid breakdown">
+    <div class="modal-card">
+      <div class="modal-header">
+        <strong>Paid Breakdown</strong>
+        <button id="paidBreakdownClose" class="icon-btn" aria-label="Close breakdown">✕</button>
+      </div>
+      <div id="paidBreakdownBody" class="modal-body"></div>
+    </div>
+  </div>
 
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>

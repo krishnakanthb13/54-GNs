@@ -310,9 +310,19 @@ function loadTheme() {
 
 // ===== Bill Modal & Maintenance Parser =====
 let currentBillGroups = [];
+let currentPaidEntries = [];
 let rawBillText = '';
+let activeBillsTab = 'expenses';
 
-const DEFAULT_MAINTENANCE_TEXT = `- September 2026
+const DEFAULT_MAINTENANCE_TEXT = `= Paid =
+
+- 4 September 2026: Monthly: 513
+- 31 July 2026: Monthly: 500
++ 29 July 2026: Drainage: 315
+
+= Expenses =
+
+- September 2026
 
 - August 2026
 House Keeping: 3000
@@ -363,6 +373,158 @@ function formatINR(val) {
   });
 }
 
+function splitMaintenanceSections(text) {
+  const lines = text.split('\n');
+  let mode = 'expenses';
+  let seenHeader = false;
+  const paidLines = [];
+  const expenseLines = [];
+  for (const raw of lines) {
+    const t = raw.trim();
+    if (/^=\s*paid\s*=/i.test(t)) { mode = 'paid'; seenHeader = true; continue; }
+    if (/^=\s*expenses?\s*=/i.test(t)) { mode = 'expenses'; seenHeader = true; continue; }
+    if (mode === 'paid') paidLines.push(raw);
+    else expenseLines.push(raw);
+  }
+  if (!seenHeader) return { paidText: '', expensesText: text };
+  return { paidText: paidLines.join('\n'), expensesText: expenseLines.join('\n') };
+}
+
+function parsePaid(text) {
+  const entries = [];
+  for (const raw of (text || '').split('\n')) {
+    const line = raw.trim();
+    if (!line) continue;
+    const additional = line.startsWith('+');
+    const body = (additional || line.startsWith('-'))
+      ? line.replace(/^[+\-]+\s*/, '').trim()
+      : line;
+    if (!body.includes(':')) continue;
+    const parts = body.split(':').map(p => p.trim()).filter(p => p.length);
+    if (parts.length < 2) continue;
+    const amountStr = parts[parts.length - 1].replace(/[^\d.]/g, '');
+    const amount = parseFloat(amountStr);
+    if (isNaN(amount)) continue;
+    let date = '';
+    let type = '';
+    if (parts.length >= 3) {
+      type = parts[parts.length - 2];
+      date = parts.slice(0, parts.length - 2).join(': ').trim();
+    } else {
+      date = parts[0];
+      type = 'Paid';
+    }
+    if (!date) continue;
+    entries.push({ date, type: type || 'Paid', amount, additional });
+  }
+  return entries;
+}
+
+function renderPaidStats(entries) {
+  const el = $('#paidStatsGrid');
+  if (!el) return;
+  const total = entries.reduce((s, e) => s + e.amount, 0);
+  const monthlyEntries = entries.filter(e => !e.additional);
+  const addEntries = entries.filter(e => e.additional);
+  const monthlyByType = {};
+  for (const e of monthlyEntries) monthlyByType[e.type] = (monthlyByType[e.type] || 0) + e.amount;
+  const addByType = {};
+  for (const e of addEntries) addByType[e.type] = (addByType[e.type] || 0) + e.amount;
+  const lines = [
+    ...Object.entries(monthlyByType)
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, v]) => `💰 ${k}: ${formatINR(v)}`),
+    ...Object.entries(addByType)
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, v]) => `⚡ ${k}: ${formatINR(v)}`)
+  ];
+  const tooltip = (lines.join('&#10;') || 'No collections yet').replace(/"/g, '&quot;');
+  el.innerHTML = `
+    <div class="status-item">
+      <span class="status-label">Total Collected</span>
+      <span class="status-value" style="color:var(--green); font-weight:700;">${formatINR(total)}</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Entries</span>
+      <span class="status-value">${entries.length}</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label paid-label-inline">Records${entries.length ? ` <button id="paidInfoBtn" class="paid-info-btn" aria-label="Show full paid breakdown" title="${tooltip}">ⓘ</button>` : ''}</span>
+      <span class="status-value" style="font-size:0.86rem;">
+        ${monthlyEntries.length} Monthly · ${addEntries.length} Additional
+      </span>
+    </div>
+  `;
+  const infoBtn = $('#paidInfoBtn');
+  if (infoBtn) {
+    infoBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      openPaidBreakdown(lines, total);
+    });
+  }
+}
+
+function openPaidBreakdown(lines, totalAmount) {
+  const overlay = $('#paidBreakdownModal');
+  const body = $('#paidBreakdownBody');
+  if (!overlay || !body) return;
+  body.innerHTML = lines.length
+    ? lines.map(l => {
+      const idx = l.indexOf(':');
+      const k = l.slice(0, idx).trim();
+      const v = l.slice(idx + 1).trim();
+      return `<div class="breakdown-row"><span>${k}</span><strong>${v}</strong></div>`;
+    }).join('') + `<div class="breakdown-row breakdown-total"><span>Total Collected</span><strong>${formatINR(totalAmount)}</strong></div>`
+    : '<div class="bill-empty-row">No collections yet</div>';
+  overlay.classList.remove('hidden');
+}
+
+function closePaidBreakdown() {
+  const overlay = $('#paidBreakdownModal');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+function renderPaidEntries(entries, filterQuery = '') {
+  const container = $('#paidContent');
+  if (!container) return;
+  if (!entries.length) {
+    container.innerHTML = '<div class="card bill-empty-state">No paid collections recorded yet.</div>';
+    return;
+  }
+  const q = filterQuery.toLowerCase().trim();
+  const shown = q
+    ? entries.filter(e => e.date.toLowerCase().includes(q) || e.type.toLowerCase().includes(q))
+    : entries;
+  if (!shown.length) {
+    container.innerHTML = `<div class="card bill-empty-state">No paid entries matching "${filterQuery}"</div>`;
+    return;
+  }
+  container.innerHTML = shown.map(e => `
+    <section class="card paid-entry-card${e.additional ? ' paid-entry-card-add' : ''}">
+      <div class="paid-entry-left">
+        <span class="paid-entry-date">✅ ${e.date}</span>
+        ${e.additional
+          ? `<span class="bill-special-badge">⚡ ${e.type}</span>`
+          : `<span class="bill-monthly-badge">💰 ${e.type}</span>`}
+      </div>
+      <div class="paid-entry-amount">${formatINR(e.amount)}</div>
+    </section>
+  `).join('');
+}
+
+function switchBillsTab(tab) {
+  activeBillsTab = tab === 'paid' ? 'paid' : 'expenses';
+  const isPaid = activeBillsTab === 'paid';
+  $('#expensesTabBtn').classList.toggle('active', !isPaid);
+  $('#paidTabBtn').classList.toggle('active', isPaid);
+  $('#expensesPane').classList.toggle('hidden', isPaid);
+  $('#paidPane').classList.toggle('hidden', !isPaid);
+  $('#expensesSummaryCard').classList.toggle('hidden', isPaid);
+  $('#paidSummaryCard').classList.toggle('hidden', !isPaid);
+  const copyBtn = $('#billCopyBtn');
+  if (copyBtn) copyBtn.textContent = isPaid ? '📋 Copy Paid Summary' : '📋 Copy Summary';
+}
+
 function parseMaintenance(text) {
   const groups = [];
   let current = null;
@@ -406,7 +568,7 @@ function renderBillStats(groups) {
     </div>
     <div class="status-item">
       <span class="status-label">Recorded Cycles</span>
-      <span class="status-value" style="font-size:0.86rem;">${monthlyCount} Monthly · ${specialCount} Special</span>
+      <span class="status-value" style="font-size:0.86rem;">${monthlyCount} Monthly · ${specialCount} Additional</span>
     </div>
   `;
 }
@@ -447,7 +609,7 @@ function renderBillGroups(groups, filterQuery = '') {
           <div class="bill-period-header">
             <div class="bill-period-header-left">
               <h2 class="card-title bill-period-title" style="margin-bottom:0;">${isSpecial ? '🛠️' : '📅'} ${g.header}</h2>
-              ${isSpecial ? '<span class="bill-special-badge">⚡ Special Expense</span>' : '<span class="bill-monthly-badge">📅 Monthly</span>'}
+              ${isSpecial ? '<span class="bill-special-badge">⚡ Additional Expense</span>' : '<span class="bill-monthly-badge">📅 Monthly</span>'}
             </div>
             <span class="bill-period-empty-badge">No entries</span>
           </div>
@@ -468,13 +630,13 @@ function renderBillGroups(groups, filterQuery = '') {
         <div class="bill-period-header">
           <div class="bill-period-header-left">
             <h2 class="card-title bill-period-title" style="margin-bottom:0;">${isSpecial ? '🛠️' : '📅'} ${g.header}</h2>
-            ${isSpecial ? '<span class="bill-special-badge">⚡ Special Expense</span>' : '<span class="bill-monthly-badge">📅 Monthly</span>'}
+            ${isSpecial ? '<span class="bill-special-badge">⚡ Additional Expense</span>' : '<span class="bill-monthly-badge">📅 Monthly</span>'}
           </div>
           <span class="bill-period-badge">${g.items.length} item${g.items.length !== 1 ? 's' : ''}</span>
         </div>
         <div class="bill-table">
           <div class="bill-table-head">
-            <span>${isSpecial ? 'Special Particulars / Work Done' : 'Utility / Particulars'}</span>
+            <span>${isSpecial ? 'Additional Particulars / Work Done' : 'Utility / Particulars'}</span>
             <span>Amount</span>
           </div>
           <div class="bill-table-body">
@@ -482,7 +644,7 @@ function renderBillGroups(groups, filterQuery = '') {
           </div>
           <div class="bill-period-footer">
             <div class="bill-subtotal-row">
-              <span>${isSpecial ? 'Special Total Expenses' : 'Monthly Total Expenses'}</span>
+              <span>${isSpecial ? 'Additional Total Expenses' : 'Monthly Total Expenses'}</span>
               <span class="bill-subtotal-val">${formatINR(total)}</span>
             </div>
             <div class="bill-tenant-row">
@@ -509,10 +671,15 @@ async function loadAndRenderBills() {
 
   if (text && text.trim()) {
     rawBillText = text;
-    currentBillGroups = parseMaintenance(rawBillText);
+    const { paidText, expensesText } = splitMaintenanceSections(rawBillText);
+    currentBillGroups = parseMaintenance(expensesText);
+    currentPaidEntries = parsePaid(paidText);
     renderBillStats(currentBillGroups);
+    renderPaidStats(currentPaidEntries);
     const searchVal = $('#billSearchInput') ? $('#billSearchInput').value : '';
     renderBillGroups(currentBillGroups, searchVal);
+    const paidSearchVal = $('#paidSearchInput') ? $('#paidSearchInput').value : '';
+    renderPaidEntries(currentPaidEntries, paidSearchVal);
   } else {
     content.innerHTML = '<div class="card bill-empty-state">No billing data available.</div>';
   }
@@ -547,7 +714,32 @@ function showView(viewName, updateHistory = true) {
 }
 
 function copyBillsSummary() {
-  if (!currentBillGroups.length) return;
+  if (activeBillsTab === 'paid') {
+    if (!currentPaidEntries.length) {
+      showToast('No paid collections to copy', '📋');
+      return;
+    }
+    let summary = `54GNs Apartments - Paid Collections Summary\n\n`;
+    let total = 0;
+    let monthlyTotal = 0;
+    let addTotal = 0;
+    for (const e of currentPaidEntries) {
+      total += e.amount;
+      if (e.additional) addTotal += e.amount; else monthlyTotal += e.amount;
+      summary += `✅ ${e.date} - ${e.type}: ${formatINR(e.amount)}${e.additional ? ' (Additional)' : ''}\n`;
+    }
+    summary += `\n💰 Total Collected: ${formatINR(total)}`;
+    summary += `\n📅 Monthly: ${formatINR(monthlyTotal)}`;
+    if (addTotal) summary += `\n⚡ Additional: ${formatINR(addTotal)}`;
+    navigator.clipboard.writeText(summary).then(() => {
+      showToast('Copied paid summary to clipboard!', '📋');
+    });
+    return;
+  }
+  if (!currentBillGroups.length) {
+    showToast('No bills to copy', '📋');
+    return;
+  }
   let summary = `54GNs Apartments - Maintenance Bills Summary\n\n`;
   let grandTotal = 0;
   for (const g of currentBillGroups) {
@@ -556,7 +748,7 @@ function copyBillsSummary() {
     const perTen = tot / 8;
     grandTotal += tot;
     const isSpecial = isSpecificDate(g.header);
-    summary += `${isSpecial ? '⚡ [SPECIAL EXPENSE] ' : '📅 '}${g.header}\n`;
+    summary += `${isSpecial ? '⚡ [ADDITIONAL EXPENSE] ' : '📅 '}${g.header}\n`;
     for (const it of g.items) {
       summary += `  • ${it.name}: ${formatINR(it.amount)}\n`;
     }
@@ -641,6 +833,19 @@ function init() {
   $('#backBtn').addEventListener('click', () => showView('rotation'));
   $('#billCopyBtn').addEventListener('click', copyBillsSummary);
   $('#billPrintBtn').addEventListener('click', printCurrentView);
+  $('#expensesTabBtn').addEventListener('click', () => switchBillsTab('expenses'));
+  $('#paidTabBtn').addEventListener('click', () => switchBillsTab('paid'));
+
+  // Paid breakdown modal
+  const paidClose = $('#paidBreakdownClose');
+  if (paidClose) paidClose.addEventListener('click', closePaidBreakdown);
+  const paidOverlay = $('#paidBreakdownModal');
+  if (paidOverlay) paidOverlay.addEventListener('click', (e) => {
+    if (e.target === paidOverlay) closePaidBreakdown();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closePaidBreakdown();
+  });
 
   // Search filter for bills
   const billSearch = $('#billSearchInput');
@@ -650,6 +855,18 @@ function init() {
       clearTimeout(billSearchTimer);
       billSearchTimer = setTimeout(() => {
         renderBillGroups(currentBillGroups, e.target.value);
+      }, 150);
+    });
+  }
+
+  // Search filter for paid collections
+  const paidSearch = $('#paidSearchInput');
+  if (paidSearch) {
+    let paidSearchTimer;
+    paidSearch.addEventListener('input', (e) => {
+      clearTimeout(paidSearchTimer);
+      paidSearchTimer = setTimeout(() => {
+        renderPaidEntries(currentPaidEntries, e.target.value);
       }, 150);
     });
   }

@@ -731,6 +731,7 @@ function copyBillsSummary() {
     summary += `\n💰 Total Collected: ${formatINR(total)}`;
     summary += `\n📅 Monthly: ${formatINR(monthlyTotal)}`;
     if (addTotal) summary += `\n⚡ Additional: ${formatINR(addTotal)}`;
+    summary += `\n\n📌 Note: Payment dates mentioned are for Flat 7 (remaining flats fall around approximately the same dates).`;
     navigator.clipboard.writeText(summary).then(() => {
       showToast('Copied paid summary to clipboard!', '📋');
     });

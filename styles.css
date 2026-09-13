@@ -1277,7 +1277,7 @@ body {
 .bill-note-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   font-size: 0.86rem;
   color: var(--text-dim);
   line-height: 1.55;
@@ -1285,6 +1285,11 @@ body {
 
 .bill-note-body p {
   margin: 0;
+}
+
+.bill-note-body p + p {
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
 }
 
 .bill-note-body strong {

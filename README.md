@@ -42,9 +42,12 @@ A minimal, self-contained, high-performance Progressive Web App (PWA) for managi
   - Each entry renders as a card: monthly entries get a green-accent card with a 💰 type badge; additional entries get an **orange-accent card** (full amber tint) with a ⚡ type badge.
   - Summary card: **Total Collected**, **Entries**, **Records ⓘ** — Records shows counts like `6 Monthly · 3 Additional`; the ⓘ button opens a **Paid Breakdown modal** with each collection type on its own line (💰 for monthly, ⚡ for additional) plus a Total row.
   - Live search filters by date or type (e.g. `Monthly`, `Drainage`, `July`).
+  - **Paid Notes & Disclaimers**: Contextual notes card seamlessly integrated into the Paid page:
+    - **Payment Dates Note**: Explains that payment dates are recorded for **Flat 7**, and payment dates for other flats should fall around approximately the same dates.
+    - **Reconciliation Ledger**: Explains that paid amounts represent a single tenant's share (total building expenses ÷ 8) with historical discrepancy audit notes.
   - Empty state: `No paid collections recorded yet.`
 - **One-Click Actions**:
-  - 📋 **Copy Summary**: active-tab aware — Expenses formats every period with totals for WhatsApp; Paid lists each `✅ date - type: amount` (adding `(Additional)` to `+` lines) plus a total and separate `📅 Monthly:` / `⚡ Additional:` subtotals.
+  - 📋 **Copy Summary**: active-tab aware — Expenses formats every period with totals for WhatsApp; Paid lists each `✅ date - type: amount` (adding `(Additional)` to `+` lines) plus a total, separate `📅 Monthly:` / `⚡ Additional:` subtotals, and the Flat 7 payment date note.
   - 🖨️ **PDF / Print**: print-optimized layout; header, footer, actions, search, tabs, and modal are hidden in print.
 - **Toast Notifications**: copy confirmations, theme changes, and Paid info feedback via bottom toasts.
 
@@ -170,14 +173,16 @@ Main Gate Keys: 1550
 ├── maintenance.txt   # `= Paid =` collections + `= Expenses =` billing groups (never cached by SW)
 ├── manifest.json     # Progressive Web App (PWA) configuration (relative paths)
 ├── sw.js             # Service Worker for offline caching with relative paths (bypasses maintenance.txt)
-├── README.md         # Documentation & guide
+├── README.md         # Documentation & user guide
+├── CODE_DOCUMENTATION.md # Architecture & technical documentation
+├── DESIGN_PHILOSOPHY.md  # Core principles & design rationale
 └── LICENSE           # MIT License
 ```
 
 Key DOM/JS hooks:
 - Bills tabs: `#expensesTabBtn`, `#paidTabBtn`, `#expensesPane`, `#paidPane`, `#expensesSummaryCard`, `#paidSummaryCard`
 - Expenses: `#billStatsGrid`, `#billSearchInput`, `#billContent`
-- Paid: `#paidStatsGrid`, `#paidSearchInput`, `#paidContent`, `#paidInfoBtn`, `#paidBreakdownModal`, `#paidBreakdownBody`, `#paidBreakdownClose`
+- Paid: `#paidStatsGrid`, `#paidSearchInput`, `#paidContent`, `#paidInfoBtn`, `.bill-note-card`, `#paidBreakdownModal`, `#paidBreakdownBody`, `#paidBreakdownClose`
 - Views: `#rotationView`, `#billsView`, `#backBtn`, `#billBtn`, deep-link `#bills`
 
 ---

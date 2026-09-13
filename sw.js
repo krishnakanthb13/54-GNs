@@ -1,4 +1,4 @@
-const CACHE = 'motor-duty-v7';
+const CACHE = 'motor-duty-v8';
 const ASSETS = ['./', './index.html', './styles.css', './script.js', './manifest.json'];
 
 self.addEventListener('install', e => {

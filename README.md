@@ -67,7 +67,7 @@ Cycles through **6 curated themes** across dark and light modes with persistent 
 
 ## 🛠️ Configuration
 
-All configuration is located at the top of [`script.js`](script.js):
+All configuration is located at the top of [`assets/js/script.js`](assets/js/script.js):
 
 ```javascript
 // Starting anchor date (must be a Monday)
@@ -167,16 +167,30 @@ Main Gate Keys: 1550
 
 ```
 /
-├── index.html        # Semantic HTML5: rotation view, tabbed Bills view (Expenses/Paid panes), Paid breakdown modal, toast container
-├── styles.css        # CSS variables, 6 theme palettes, card layouts, bill tabs, paid cards, modal, toast, responsive grid, print styles
-├── script.js         # Rotation math, section splitter + expense/paid parsers, stats + list renderers, tab router, modal, theme cycler, view router
-├── maintenance.txt   # `= Paid =` collections + `= Expenses =` billing groups (never cached by SW)
-├── manifest.json     # Progressive Web App (PWA) configuration (relative paths)
-├── sw.js             # Service Worker for offline caching with relative paths (bypasses maintenance.txt)
-├── README.md         # Documentation & user guide
-├── CODE_DOCUMENTATION.md # Architecture & technical documentation
-├── DESIGN_PHILOSOPHY.md  # Core principles & design rationale
-└── LICENSE           # MIT License
+├── assets/
+│   ├── css/
+│   │   └── styles.css        # CSS variables, 6 theme palettes, card layouts, tabs, responsive grid, print styles
+│   ├── js/
+│   │   └── script.js         # Rotation math, section splitter, expense/paid parsers, stats, modal, theme cycler
+│   └── icons/
+│       ├── favicon.ico       # Multi-resolution ICO (16x16, 32x32, 48x48)
+│       ├── favicon.svg       # Scalable vector droplet icon
+│       ├── apple-touch-icon.png # iOS touch icon (180x180)
+│       ├── icon-192.png      # PWA icon (192x192)
+│       └── icon-512.png      # PWA splash icon (512x512)
+├── docs/
+│   ├── CODE_DOCUMENTATION.md # Architecture & technical documentation
+│   ├── DESIGN_PHILOSOPHY.md  # Core principles & design rationale
+│   ├── info.txt              # Project specifications & user requirements
+│   └── seed-prompt.txt       # Foundation prompt & domain rules
+├── favicon.ico               # Root favicon for Vercel & search engine detection
+├── index.html                # Semantic HTML5: rotation view, tabbed Bills view, modal, toast container
+├── maintenance.txt           # `= Paid =` collections + `= Expenses =` billing groups (never cached by SW)
+├── manifest.json             # Progressive Web App (PWA) configuration (relative paths)
+├── sw.js                     # Service Worker for offline caching (bypasses maintenance.txt)
+├── vercel.json               # Vercel deployment configuration (headers, caching, cleanUrls)
+├── README.md                 # Documentation & user guide
+└── LICENSE                   # MIT License
 ```
 
 Key DOM/JS hooks:
@@ -189,14 +203,37 @@ Key DOM/JS hooks:
 
 ## 🌐 Deployment & Local Usage
 
-The project uses **100% relative paths** (`./`) with zero build dependencies, so it runs seamlessly anywhere:
+The project uses **100% relative paths** (`./`) with zero build dependencies, so it runs seamlessly across any static host:
 
-1. **GitHub Pages / Subdirectories**: Works directly in any path or subpath (e.g. `https://krishnakanthb13.github.io/54-GNs/`).
-2. **Vercel / Netlify**: Deploy with zero build step.
-3. **Local Preview**: Open `index.html` via any static file server:
-   ```bash
-   npx serve .
-   ```
+### 1. Vercel (Recommended)
+Configured out-of-the-box via [`vercel.json`](vercel.json):
+- **Zero-Build Static Hosting**: Connect your GitHub repository to Vercel for instant automatic deployments.
+- **Service Worker Cache Busted**: Header `Cache-Control: public, max-age=0, must-revalidate` on `/sw.js` ensures resident browsers instantly detect new application updates.
+- **Dynamic Database Bypass**: Header `Cache-Control: no-cache, no-store, must-revalidate` on `/maintenance.txt` allows immediate billing changes without rebuilds.
+- **Favicon & Crawler Detection**: Root [`favicon.ico`](favicon.ico) and vector [`assets/icons/favicon.svg`](assets/icons/favicon.svg) are automatically picked up by Vercel's project dashboard, social link scrapers, and mobile browsers.
+- **Security Headers Included**: Injects `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection`, and `Referrer-Policy`.
+
+### 2. GitHub Pages / Subdirectories
+Works directly in any subdirectory path without routing configuration (e.g. `https://krishnakanthb13.github.io/54-GNs/`).
+
+### 3. Local Preview
+Serve locally using Python or Node.js:
+```bash
+# Python
+python -m http.server 8080
+
+# Or Node.js
+npx serve .
+```
+Then open `http://localhost:8080` in your browser.
+
+---
+
+## 📚 Technical Documentation
+
+For in-depth architectural specifications and design ideology, consult the documents in [`docs/`](docs/):
+- **[Code Documentation](docs/CODE_DOCUMENTATION.md)**: Deep dive into the rotation arithmetic, regex billing parser, DOM selector architecture, and PWA caching lifecycle.
+- **[Design Philosophy](docs/DESIGN_PHILOSOPHY.md)**: Core mission, rationale behind the flat-file database, Flat 7 contextual notice, and reconciliation audit principles.
 
 ---
 

@@ -1,5 +1,17 @@
-const CACHE = 'motor-duty-v8';
-const ASSETS = ['./', './index.html', './styles.css', './script.js', './manifest.json'];
+const CACHE = 'motor-duty-v11';
+const ASSETS = [
+  './',
+  './index.html',
+  './assets/css/styles.css',
+  './assets/js/script.js',
+  './manifest.json',
+  './favicon.ico',
+  './assets/icons/favicon.ico',
+  './assets/icons/favicon.svg',
+  './assets/icons/apple-touch-icon.png',
+  './assets/icons/icon-192.png',
+  './assets/icons/icon-512.png'
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));

@@ -25,8 +25,8 @@ The application is engineered as a zero-build, zero-dependency Progressive Web A
                                   |
               +-------------------+-------------------+
               |                   |                   |
-        script.js             styles.css            sw.js
-  (State & Logic)       (6 Themes & Layout)    (PWA Cache v8)
+      assets/js/script.js  assets/css/styles.css    sw.js
+       (State & Logic)     (6 Themes & Layout)  (PWA Cache v11)
               ^
               | Fetch with cache-busting (?t=Date.now())
         maintenance.txt
@@ -34,7 +34,7 @@ The application is engineered as a zero-build, zero-dependency Progressive Web A
 
 ---
 
-## 2. Core Modules & Functions (`script.js`)
+## 2. Core Modules & Functions (`assets/js/script.js`)
 
 ### 2.1 Water Motor Duty Engine
 - **`START_DATE`**: Anchor Monday (`"2026-06-01"`) establishing the cycle origin.
@@ -86,7 +86,7 @@ The application is engineered as a zero-build, zero-dependency Progressive Web A
 
 ---
 
-## 3. Styling & Theme Engine (`styles.css`)
+## 3. Styling & Theme Engine (`assets/css/styles.css`)
 
 - **Design System**: Built on CSS Custom Properties (`--bg`, `--surface`, `--border`, `--text`, `--text-dim`, `--accent`, `--primary`).
 - **Theme Cycling**: Supports 6 distinct themes (Dark Slate, Obsidian Violet, Forest Emerald, Pure Sky, Warm Sand, Fresh Mint).
@@ -100,6 +100,29 @@ The application is engineered as a zero-build, zero-dependency Progressive Web A
 
 ## 4. Offline & Cache Strategy (`sw.js`)
 
-- **Cache Identifier**: `motor-duty-v8`.
-- **Static Assets**: Pre-caches `./`, `./index.html`, `./styles.css`, `./script.js`, `./manifest.json`.
+- **Cache Identifier**: `motor-duty-v11`.
+- **Pre-cached Assets**:
+  - Root: `./`, `./index.html`, `./manifest.json`, `./favicon.ico`
+  - Core Bundles: `./assets/css/styles.css`, `./assets/js/script.js`
+  - Graphics & Icons: `./assets/icons/favicon.ico`, `./assets/icons/favicon.svg`, `./assets/icons/apple-touch-icon.png`, `./assets/icons/icon-192.png`, `./assets/icons/icon-512.png`
 - **Dynamic Bypass**: Explicitly intercepts and bypasses caching for any request to `maintenance.txt`, ensuring instant data updates across all clients without PWA cache invalidation friction.
+
+---
+
+## 5. Vercel Cloud Integration (`vercel.json`)
+
+Provides zero-build configuration tailored for PWA lifecycle and immediate flat-file synchronization:
+- **Clean URLs (`cleanUrls: true`)**: Strips `.html` extensions and handles normalized route resolution.
+- **Service Worker Lifetime**: Forces `Cache-Control: public, max-age=0, must-revalidate` along with `Service-Worker-Allowed: /` on `/sw.js` so clients check for new PWA releases on every session.
+- **Flat-File Synchronization**: Enforces `Cache-Control: no-cache, no-store, must-revalidate` on `/maintenance.txt`, guaranteeing live Git edits propagate immediately without caching lag.
+- **Static Asset Immutability**: Applies `Cache-Control: public, max-age=31536000, immutable` on `/assets/:path*` and `/favicon.ico` for maximum CDN edge caching performance.
+- **Security Hardening**: Globally serves `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Referrer-Policy: strict-origin-when-cross-origin`.
+
+---
+
+## 6. Favicon & App Icon Pipeline (`assets/icons/`)
+
+- **Root Favicon (`/favicon.ico`)**: Multi-resolution Windows ICO container embedding 16×16, 32×32, and 48×48 frames with transparent background for direct resolution by Vercel project dashboard, browser bookmarks, and web scrapers.
+- **Vector Favicon (`assets/icons/favicon.svg`)**: Scalable water droplet vector with gradient (`#38bdf8` → `#0284c7` → `#0369a1`) and cubic Bézier specular gloss reflection.
+- **Android Maskable PWA Icons (`icon-192.png`, `icon-512.png`)**: Designed with deep navy `#0b1329` brand background and centered within the 80% safe zone to prevent letterboxing on adaptive Android launchers.
+- **iOS Home Screen Icon (`apple-touch-icon.png`)**: 180×180 PNG styled with solid `#0b1329` background for Apple Web Clip displays.

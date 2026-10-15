@@ -29,6 +29,7 @@
       </div>
       <div class="header-actions">
         <button id="billBtn" class="icon-btn" aria-label="Maintenance bills" title="Maintenance bills">🧾</button>
+        <button id="issuesBtn" class="icon-btn" aria-label="Maintenance issues" title="Maintenance issues">⚠️</button>
         <button id="themeToggle" class="icon-btn" aria-label="Toggle theme" title="Toggle theme">🌙</button>
         <button id="printBtn" class="icon-btn" aria-label="Print" title="Print">🖨️</button>
       </div>
@@ -218,10 +219,44 @@
         </section>
       </div>
     </div>
+
+    <!-- View 3: Maintenance Issues View -->
+    <div id="issuesView" class="view-container hidden">
+      <!-- Summary Card -->
+      <section id="issuesSummaryCard" class="card bill-summary-card" aria-label="Issues summary">
+        <h2 class="card-title">Maintenance Issues Summary</h2>
+        <div id="issueStatsGrid" class="status-grid bill-stats-grid"></div>
+      </section>
+
+      <!-- Actions & Cycling Sort -->
+      <section class="actions-row" aria-label="Issue actions">
+        <button id="issueSortBtn" class="action-btn" title="Click to cycle sort order">🔀 Sort: Default (File)</button>
+        <button id="issueCopyBtn" class="action-btn">📋 Copy Issues</button>
+        <button id="issuePrintBtn" class="action-btn">📄 PDF / Print</button>
+      </section>
+
+      <!-- Search Issues -->
+      <section class="card search-card" aria-label="Search issues">
+        <h2 class="card-title">Search Issues</h2>
+        <div class="search-box">
+          <input type="text" id="issueSearchInput" placeholder="Type issue title, context, or status (e.g. Drainage, Pending)..." aria-label="Search issues" autocomplete="off">
+        </div>
+      </section>
+
+      <!-- Issues List -->
+      <div id="issuesContent" class="issues-list"></div>
+
+      <!-- Footer Note for Flat 7 Issues -->
+      <section class="card bill-note-card issue-note-card" aria-label="Issues notes">
+        <div class="bill-note-body">
+          <p>📌 <strong>Flat 7 Issues Log:</strong> These are the issues and maintenance concerns faced and reported by <strong>Flat 7</strong> (Krishna Kanth B). This log maintains an exact record of start dates, resolution timelines, and follow-ups for accountability and reference.</p>
+        </div>
+      </section>
+    </div>
   </main>
 
   <footer class="footer">
-    <p>Version v0.0.9 · Hosted on Vercel · <a href="https://github.com/krishnakanthb13/54-GNs" target="_blank"
+    <p>Version v0.1.0 · Hosted on Vercel · <a href="https://github.com/krishnakanthb13/54-GNs" target="_blank"
         rel="noopener">GitHub Repository</a></p>
     <p>Made with 🤖 AI + 🧠 brain by <strong>krishnakanthb13</strong></p>
     <p id="lastUpdated"></p>

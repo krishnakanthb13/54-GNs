@@ -1,5 +1,6 @@
 = Paid =
 
+- 29 September 2026: Monthly: 500
 - 4 September 2026: Monthly: 513
 - 31 July 2026: Monthly: 500
 + 29 July 2026: Drainage: 315
@@ -12,7 +13,10 @@
 
 = Expenses =
 
+- October 2026
+
 - September 2026
+House Keeping: 3000
 
 - August 2026
 House Keeping: 3000
@@ -49,3 +53,84 @@ Broom Stick: 200
 
 - 26 March 2026
 Main Gate Keys: 1550
+
+= Issues =
+
+Issue:
+StartDate:
+EndDate:
+Status:
+Context:
+
+Issue: Drainage Issue in Restroom
+StartDate: 05 October 2026
+EndDate: 09 October 2026
+Status: Completed
+Context: 
+- Water was not going in the bathroom Drainage.
+- There was too much reflux and water blockage.
+- Corporation was contacted first, and Plumber said it was fine. This was not true.
+- Informed Owner and a Plumber who fixes issues at this place came. 
+- Plumber came and cleaned it with hose pipe.
+- The blockage was full of small broken bricks and tiny plastic covers.
+
+Issue: Tiles Broken in Bedroom
+StartDate: 12 September 2026
+EndDate: 03 October 2026
+Status: Completed
+Context:
+- When we locked the house and went to TTD for 5 day.
+- Upon returning found 6+ tiles broken in the bedroom.
+- This was the same place where the walking on it caused a hollow noise earlier.
+- Upon patiently waiting for ~3 weeks after informing, and following up twice.
+- Mason came and fixed the tiles. He removed all the broken tiles and laid new ones.
+
+Issue: Bathroom Taps & Rusted Shower
+StartDate: 06 August 2026
+EndDate: 05 October 2026
+Status: Pending
+Context:
+- Within 6 months the bathroom taps and shower became loose and rusted.
+- Raised with the owner on 06 August; estimate shared on 12 August (material + labour ≈ 1,800-1,900).
+- Plumber came on 14 August but said he only handles plumbing, not cement work.
+- On 05 October the plumber fixed the washing machine tap, wash basin tap and shower head.
+- Actual cost: Shower head 295, Wash basin tap 644, PVC hose 80, Washing machine tap 100, Pipe connector 20, Labour 450 - total 1,589.
+- Owner payment has not been completed.
+
+Issue: Pending Masonry Work (Roof, Gadapa, Bathroom Step, Tile Gaps)
+StartDate: 09 May 2026
+EndDate: Nill
+Status: Pending
+Context:
+- Rainwater drips from an electricity pipe, and with no gadapa at the front gate water enters the hall.
+- Roof needs sealing of holes and gaps (rain leakage), which also causes sparks in electric plugs.
+- Gadapa needs installation with a tile to stop water seeping into the hall.
+- Bathroom step needs fixing; parts of it are sharp and cut the skin.
+- Rooms need sealing of gaps around the slab and tiles; ants and insects come out of the gaps.
+- Informed repeatedly (09 May, 25 May, 11 June, 13 July, 30 July, 05 October); mason has still not come.
+
+Issue: Moist Electric Box
+StartDate: 24 March 2026
+EndDate: Nill
+Status: Pending
+Context:
+- The Electric Box which is inside the hall is having Moist/Water logging inside it.
+- First noticed around 24 March 2026, when the electrician found the EB pipe wet, which had caused a short circuit.
+- Informed the owner, he initially ignored it. Later he came to check it by himself.
+- Then informed him multiple times, and he said he would send someone.
+- Additionally he also asked for some kind of proof of the water leak condition.
+- Related: the Gadapa, Bathroom Step and Tile Gaps are tracked under the "Pending Masonry Work" issue.
+
+Issue: Painter Payment
+StartDate: 18 February 2026
+EndDate: 25 May 2026
+Status: Completed
+Context:
+- After paying for the Painting Job from my end.
+- Initially Owner informed that it would be compensated in the rent payment.
+- Later he wanted the Painter to come in and sign the Voucher and only then he would pay the Painter Directly.
+- This was odd, because the Painter was hospitalised and unreachable.
+- Informed the Owner about the condition and asked him to do the needful.
+- I requested rent deduction instead of voucher.
+- He came, compensated the amount, after reaching out twice.
+- Quotation: ₹25,000 (5 days + 1 electric day), ₹13k advance.

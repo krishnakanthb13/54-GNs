@@ -1408,6 +1408,190 @@ body {
   }
 }
 
+/* ===== Maintenance Issues Page Styles ===== */
+#issuesView {
+  gap: 12px;
+}
+
+#issuesView .bill-summary-card {
+  padding: 16px 20px;
+}
+
+.issues-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.issue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  border-left: 4px solid var(--accent);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.issue-card:hover {
+  transform: translateY(-2px);
+}
+
+.issue-card-completed {
+  border-left-color: var(--green);
+}
+
+.issue-card-pending {
+  border-left-color: var(--orange);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(251, 146, 60, 0.05) 100%);
+}
+
+.issue-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.issue-card-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.issue-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.issue-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-self: flex-start;
+}
+
+.issue-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.issue-badge-completed {
+  color: var(--green);
+  background: var(--green-dim);
+  border: 1px solid var(--green);
+}
+
+.issue-badge-pending {
+  color: var(--orange);
+  background: var(--orange-dim);
+  border: 1px solid var(--orange);
+}
+
+/* Duration Pill */
+.issue-duration-pill {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.issue-duration-pill.ongoing {
+  background: var(--orange-dim);
+  color: var(--orange);
+  border-color: var(--orange);
+}
+
+.issue-dates-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+}
+
+.issue-dates-bar strong {
+  color: var(--text);
+}
+
+.issue-date-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.issue-context-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.issue-context-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.issue-context-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.issue-context-item {
+  font-size: 0.86rem;
+  color: var(--text);
+  padding-left: 1.4em;
+  position: relative;
+  line-height: 1.5;
+}
+
+.issue-context-item::before {
+  content: '•';
+  position: absolute;
+  left: 4px;
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.issue-card-pending .issue-context-item::before {
+  color: var(--orange);
+}
+
+.issue-card-completed .issue-context-item::before {
+  color: var(--green);
+}
+
 /* Print Styles */
 @media print {
   body {
@@ -1439,7 +1623,8 @@ body {
     display: none !important;
   }
 
-  .bill-period-card {
+  .bill-period-card,
+  .issue-card {
     break-inside: avoid;
     border: 1px solid #ccc !important;
     margin-bottom: 16px;

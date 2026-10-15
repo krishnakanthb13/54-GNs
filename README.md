@@ -3,10 +3,10 @@
 [![GitHub Repository](https://img.shields.io/badge/GitHub-krishnakanthb13%2F54--GNs-blue?logo=github)](https://github.com/krishnakanthb13/54-GNs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A minimal, self-contained, high-performance Progressive Web App (PWA) for managing weekly water motor rotation duties and tracking building maintenance bills and collections for apartment residents.
+A minimal, self-contained, high-performance Progressive Web App (PWA) for managing weekly water motor rotation duties and tracking building maintenance bills, collections, and repair issues for apartment residents.
 
 - **Repository**: [https://github.com/krishnakanthb13/54-GNs](https://github.com/krishnakanthb13/54-GNs)
-- **Live**: `https://54-gn-s.vercel.app/#bills` opens the Bills page directly
+- **Live**: `https://54-gn-s.vercel.app/#bills` opens Bills directly · `https://54-gn-s.vercel.app/#issues` opens Issues directly
 
 ---
 
@@ -33,14 +33,14 @@ A minimal, self-contained, high-performance Progressive Web App (PWA) for managi
 - **Expenses View**:
   - Automatically totals each billing period (`- Month Year`) and calculates **Per Flat Share (÷ 8)** with Indian Rupee formatting (`₹`).
   - Monthly headers (e.g. `- August 2026`) show a `📅 Monthly` tag; date headers (e.g. `- 29 July 2026`) show a `⚡ Additional Expense` amber card.
-  - Empty months (e.g. `- September 2026` with no items) render as `No entries` with no totals.
+  - Empty months (e.g. `- October 2026` with no items) render as `No entries` with no totals.
   - Summary card: **Total Expenses**, **Per Flat (÷8)**, **Recorded Cycles** (`X Monthly · Y Additional`).
   - Live search filters by month or utility (e.g. `Electric`, `May`).
 - **Paid View**:
   - Parses collection lines under `= Paid =` (format `- DATE: TYPE: AMOUNT`, e.g. `- 4 September 2026: Monthly: 513`).
   - Lines starting with `+` are treated as **Additional** collections (amber styling, ⚡ badge) — e.g. `+ 29 July 2026: Drainage: 315`.
   - Each entry renders as a card: monthly entries get a green-accent card with a 💰 type badge; additional entries get an **orange-accent card** (full amber tint) with a ⚡ type badge.
-  - Summary card: **Total Collected**, **Entries**, **Records ⓘ** — Records shows counts like `6 Monthly · 3 Additional`; the ⓘ button opens a **Paid Breakdown modal** with each collection type on its own line (💰 for monthly, ⚡ for additional) plus a Total row.
+  - Summary card: **Total Collected**, **Entries**, **Records ⓘ** — Records shows counts like `7 Monthly · 3 Additional`; the ⓘ button opens a **Paid Breakdown modal** with each collection type on its own line (💰 for monthly, ⚡ for additional) plus a Total row.
   - Live search filters by date or type (e.g. `Monthly`, `Drainage`, `July`).
   - **Paid Notes & Disclaimers**: Contextual notes card seamlessly integrated into the Paid page:
     - **Payment Dates Note**: Explains that payment dates are recorded for **Flat 7**, and payment dates for other flats should fall around approximately the same dates.
@@ -49,7 +49,31 @@ A minimal, self-contained, high-performance Progressive Web App (PWA) for managi
 - **One-Click Actions**:
   - 📋 **Copy Summary**: active-tab aware — Expenses formats every period with totals for WhatsApp; Paid lists each `✅ date - type: amount` (adding `(Additional)` to `+` lines) plus a total, separate `📅 Monthly:` / `⚡ Additional:` subtotals, and the Flat 7 payment date note.
   - 🖨️ **PDF / Print**: print-optimized layout; header, footer, actions, search, tabs, and modal are hidden in print.
-- **Toast Notifications**: copy confirmations, theme changes, and Paid info feedback via bottom toasts.
+
+### ⚠️ Maintenance Issues Tracker (`#issues`)
+- **Flat-File Database via `= Issues =`**: Seamlessly tracks apartment and building repair/maintenance issues directly in [`maintenance.txt`](maintenance.txt).
+- **Dedicated Issues Page**: Accessible via the header `⚠️` button or `#issues` URL deep-linking with header `← Back` navigation.
+- **Automatic Duration Pill (`⏱️`)**: Automatically calculates elapsed duration between `StartDate` and `EndDate` (e.g. `⏱️ 4 days`), or from `StartDate` to today if pending/ongoing (`⏱️ 197 days (Ongoing)`).
+- **Template Skipping**: Automatically filters out empty issue templates (such as blank templates left at the top of the section for formatting), only displaying issues with actual logged data.
+- **8-Mode Cycling Sort Button (`🔀 Sort`)**:
+  - `Default (File)`: Original order as listed in the maintenance text file.
+  - `Title (A–Z)`: Alphabetical ascending by issue name.
+  - `Title (Z–A)`: Alphabetical descending by issue name.
+  - `Start Date (Newest)`: Most recently started issues first.
+  - `Start Date (Oldest)`: Earliest started issues first.
+  - `End Date (Newest)`: Most recently completed issues first (ongoing issues listed first).
+  - `End Date (Oldest)`: Earliest completed issues first (pending issues listed last).
+  - `Status (Pending First)`: Prioritizes unresolved/pending issues over completed ones.
+- **Summary Metrics Card**:
+  - **Total Issues Logged**
+  - **Resolved (`✅`)**
+  - **Pending (`⏳`)**
+- **Live Search**: Instant keyword filtering across title, status, start/end dates, and multi-line context bullet points.
+- **Context & Timeline**: Detailed problem descriptions, steps taken, resolution timelines, and owner communication logs.
+- **Flat 7 Transparency Note**: Contextual footer note explaining that the log documents issues faced by Flat 7 for accountability and landlord reference.
+- **Export & Print**:
+  - 📋 **Copy Issues**: Copies formatted WhatsApp-ready text summary of all issues with start/end dates, duration, and context details.
+  - 📄 **PDF / Print**: Print-optimized styling with avoidance of awkward page breaks.
 
 ### 🎨 Multi-Theme System
 Cycles through **6 curated themes** across dark and light modes with persistent `localStorage` preference and mobile `<meta name="theme-color">` syncing:
@@ -62,6 +86,16 @@ Cycles through **6 curated themes** across dark and light modes with persistent 
 | ☀️ | **Pure Sky** | Light | Crisp Cool Slate / Ocean Blue accent |
 | ☕ | **Warm Sand** | Light | Cozy Parchment / Amber Terracotta accent |
 | 🍃 | **Fresh Mint** | Light | Soft Mint Pastel / Forest Sage accent |
+
+### 🔔 Toast Notification & Resident Feedback System
+A lightweight, glassmorphic toast notification system (`#toastContainer`) providing immediate, non-intrusive feedback across the app:
+- **Clipboard & Sharing Actions**: Instant confirmations for copying duty week info, maintenance bills summary, paid collection logs, and issues summaries (`📋 Copied...`). Empty data guards notify when there is nothing to copy.
+- **Cycling Sort Feedback**: Displays active sort criteria when cycling through issue sort orders (`🔀 Sorted by ...`).
+- **File Downloads & Print**: Confirms CSV export generation (`📊 Exported motor rotation schedule (CSV)!`) and print dialog preparation (`🖨️ Preparing printable document...`).
+- **Theme Cycling Feedback**: Confirms every theme switch (e.g. `🌙 Theme: Obsidian Violet (Dark)`).
+- **Live Search Guard**: Alerts residents when search filters yield zero matches across flats, bills, collections, or issues (`🔍 No flat/bills/collections/issues matching "..."`).
+- **Network & Offline Awareness**: Informs residents when connection is lost (`📶 You are currently offline`), when cached records are used (`📶 Offline mode: using cached records`), and when syncing back online (`🌐 Back online! Syncing records...`).
+- **PWA Lifecycle Updates**: Detects when a new Service Worker update is downloaded and ready (`🚀 New version available! Reload to apply.`).
 
 ---
 
@@ -106,16 +140,23 @@ Edit [`maintenance.txt`](maintenance.txt) anytime using this format:
 ```text
 = Paid =
 
+- 29 September 2026: Monthly: 500
 - 4 September 2026: Monthly: 513
 - 31 July 2026: Monthly: 500
 + 29 July 2026: Drainage: 315
 - 1 July 2026: Monthly: 65
 - 30 April 2026: Monthly: 628
 + 11 April 2026: Sump & Tank Cleaning: 500
+- 9 April 2026: Motor Repair (Compensated): 890
+- 31 March 2026: Monthly: 430
++ 26 March 2026: Main Gate Keys: 194
 
 = Expenses =
 
+- October 2026
+
 - September 2026
+House Keeping: 3000
 
 - August 2026
 House Keeping: 3000
@@ -152,14 +193,107 @@ Broom Stick: 200
 
 - 26 March 2026
 Main Gate Keys: 1550
+
+= Issues =
+
+Issue:
+StartDate:
+EndDate:
+Status:
+Context:
+
+Issue: Drainage Issue in Restroom
+StartDate: 05 October 2026
+EndDate: 09 October 2026
+Status: Completed
+Context:
+- Water was not going in the bathroom Drainage.
+- There was too much reflux and water blockage.
+- Corporation was contacted first, and Plumber said it was fine. This was not true.
+- Informed Owner and a Plumber who fixes issues at this place came.
+- Plumber came and cleaned it with hose pipe.
+- The blockage was full of small broken bricks and tiny plastic covers.
+
+Issue: Tiles Broken in Bedroom
+StartDate: 12 September 2026
+EndDate: 03 October 2026
+Status: Completed
+Context:
+- When we locked the house and went to TTD for 5 day.
+- Upon returning found 6+ tiles broken in the bedroom.
+- This was the same place where the walking on it caused a hollow noise earlier.
+- Upon patiently waiting for ~3 weeks after informing, and following up twice.
+- Mason came and fixed the tiles. He removed all the broken tiles and laid new ones.
+
+Issue: Bathroom Taps & Rusted Shower
+StartDate: 06 August 2026
+EndDate: 05 October 2026
+Status: Pending
+Context:
+- Within 6 months the bathroom taps and shower became loose and rusted.
+- Raised with the owner on 06 August; estimate shared on 12 August (material + labour ≈ 1,800-1,900).
+- Plumber came on 14 August but said he only handles plumbing, not cement work.
+- On 05 October the plumber fixed the washing machine tap, wash basin tap and shower head.
+- Actual cost: Shower head 295, Wash basin tap 644, PVC hose 80, Washing machine tap 100, Pipe connector 20, Labour 450 - total 1,589.
+- Owner payment has not been completed.
+
+Issue: Pending Masonry Work (Roof, Gadapa, Bathroom Step, Tile Gaps)
+StartDate: 09 May 2026
+EndDate: Nill
+Status: Pending
+Context:
+- Rainwater drips from an electricity pipe, and with no gadapa at the front gate water enters the hall.
+- Roof needs sealing of holes and gaps (rain leakage), which also causes sparks in electric plugs.
+- Gadapa needs installation with a tile to stop water seeping into the hall.
+- Bathroom step needs fixing; parts of it are sharp and cut the skin.
+- Rooms need sealing of gaps around the slab and tiles; ants and insects come out of the gaps.
+- Informed repeatedly (09 May, 25 May, 11 June, 13 July, 30 July, 05 October); mason has still not come.
+
+Issue: Moist Electric Box
+StartDate: 24 March 2026
+EndDate: Nill
+Status: Pending
+Context:
+- The Electric Box which is inside the hall is having Moist/Water logging inside it.
+- First noticed around 24 March 2026, when the electrician found the EB pipe wet, which had caused a short circuit.
+- Informed the owner, he initially ignored it. Later he came to check it by himself.
+- Then informed him multiple times, and he said he would send someone.
+- Additionally he also asked for some kind of proof of the water leak condition.
+- Related: the Gadapa, Bathroom Step and Tile Gaps are tracked under the "Pending Masonry Work" issue.
+
+Issue: Painter Payment
+StartDate: 18 February 2026
+EndDate: 25 May 2026
+Status: Completed
+Context:
+- After paying for the Painting Job from my end.
+- Initially Owner informed that it would be compensated in the rent payment.
+- Later he wanted the Painter to come in and sign the Voucher and only then he would pay the Painter Directly.
+- This was odd, because the Painter was hospitalised and unreachable.
+- Informed the Owner about the condition and asked him to do the needful.
+- I requested rent deduction instead of voucher.
+- He came, compensated the amount, after reaching out twice.
+- Quotation: ₹25,000 (5 days + 1 electric day), ₹13k advance.
 ```
 
 ### Syntax Rules:
-1. **Section Headers**: `= Paid =` and `= Expenses =` (case-insensitive, `=` on both sides). Everything under `= Paid =` is parsed as collections; everything under `= Expenses =` is parsed as expenses. If no headers exist, the whole file is treated as Expenses (backward compatible).
+1. **Section Headers**: `= Paid =`, `= Expenses =`, and `= Issues =` (case-insensitive, `=` on both sides). Everything under `= Paid =` is parsed as collections; everything under `= Expenses =` is parsed as expenses; everything under `= Issues =` is parsed as maintenance issues.
 2. **Paid Lines**: `- DATE: TYPE: AMOUNT` (e.g. `- 4 September 2026: Monthly: 513`). Date is everything before the second-last colon, type is the second-last segment, amount is the last number. Two-segment lines (`- 31 July 2026: 500`) fall back to type `Paid`. A `+` prefix marks the entry as **Additional** (e.g. `+ 29 July 2026: Drainage: 315`) — shown with ⚡ amber styling instead of the standard 💰 green badge.
 3. **Expense Groups**: `- Month Year` headers (e.g. `- April 2026`) display a `📅 Monthly` tag; `- DD Month Year` headers (e.g. `- 12 April 2026`) are auto-detected as **`⚡ Additional Expense`** with amber styling.
 4. **Expense Line Items**: `Utility Name: Amount` (e.g. `House Keeping: 3000`).
-5. Leave blank lines between periods for readability; empty months render as `No entries` with no totals.
+5. **Issue Blocks**:
+   ```text
+   Issue: Problem Name
+   StartDate: DD Month Year
+   EndDate: DD Month Year (or Nill / Pending)
+   Status: Completed | Pending
+   Context:
+   - Bullet point note 1
+   - Bullet point note 2
+   ```
+   - The template block with empty fields is automatically skipped.
+   - Day differences between `StartDate` and `EndDate` are calculated automatically and rendered as duration pills (e.g. `⏱️ 4 days`, or `⏱️ 197 days (Ongoing)` when ongoing).
+6. Leave blank lines between entries for readability.
 
 ---
 
@@ -171,7 +305,7 @@ Main Gate Keys: 1550
 │   ├── css/
 │   │   └── styles.css        # CSS variables, 6 theme palettes, card layouts, tabs, responsive grid, print styles
 │   ├── js/
-│   │   └── script.js         # Rotation math, section splitter, expense/paid parsers, stats, modal, theme cycler
+│   │   └── script.js         # Rotation math, section splitter, expense/paid/issue parsers, stats, modal, theme cycler
 │   └── icons/
 │       ├── favicon.ico       # Multi-resolution ICO (16x16, 32x32, 48x48)
 │       ├── favicon.svg       # Scalable vector droplet icon
@@ -184,8 +318,8 @@ Main Gate Keys: 1550
 │   ├── info.txt              # Project specifications & user requirements
 │   └── seed-prompt.txt       # Foundation prompt & domain rules
 ├── favicon.ico               # Root favicon for Vercel & search engine detection
-├── index.html                # Semantic HTML5: rotation view, tabbed Bills view, modal, toast container
-├── maintenance.txt           # `= Paid =` collections + `= Expenses =` billing groups (never cached by SW)
+├── index.html                # Semantic HTML5: rotation view, tabbed Bills view, Issues view, modal, toast container
+├── maintenance.txt           # `= Paid =` collections + `= Expenses =` billing groups + `= Issues =` log (never cached by SW)
 ├── manifest.json             # Progressive Web App (PWA) configuration (relative paths)
 ├── sw.js                     # Service Worker for offline caching (bypasses maintenance.txt)
 ├── vercel.json               # Vercel deployment configuration (headers, caching, cleanUrls)
@@ -197,7 +331,8 @@ Key DOM/JS hooks:
 - Bills tabs: `#expensesTabBtn`, `#paidTabBtn`, `#expensesPane`, `#paidPane`, `#expensesSummaryCard`, `#paidSummaryCard`
 - Expenses: `#billStatsGrid`, `#billSearchInput`, `#billContent`
 - Paid: `#paidStatsGrid`, `#paidSearchInput`, `#paidContent`, `#paidInfoBtn`, `.bill-note-card`, `#paidBreakdownModal`, `#paidBreakdownBody`, `#paidBreakdownClose`
-- Views: `#rotationView`, `#billsView`, `#backBtn`, `#billBtn`, deep-link `#bills`
+- Issues: `#issuesView`, `#issuesSummaryCard`, `#issueStatsGrid`, `#issueSortBtn`, `#issueSearchInput`, `#issuesContent`, `.issue-note-card`, `#issueCopyBtn`, `#issuePrintBtn`
+- Views & Nav: `#rotationView`, `#billsView`, `#issuesView`, `#backBtn`, `#billBtn`, `#issuesBtn`, deep-links `#bills` and `#issues`
 
 ---
 

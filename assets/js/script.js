@@ -208,7 +208,12 @@ function renderSearch(query) {
 
   const q = query.toLowerCase();
   const flatObj = FLATS.find(f => f.name.toLowerCase().includes(q) || (f.tenant && f.tenant.toLowerCase().includes(q)));
-  if (!flatObj) { result.textContent = 'No flat found.'; result.classList.remove('hidden'); return; }
+  if (!flatObj) {
+    result.textContent = 'No flat found.';
+    result.classList.remove('hidden');
+    if (query.trim().length >= 2) showToast(`No flat matching "${query}"`, '🔍');
+    return;
+  }
 
   const flatDisplay = flatObj.tenant ? `${flatObj.name} (${flatObj.tenant})` : flatObj.name;
 
@@ -311,18 +316,41 @@ function loadTheme() {
 // ===== Bill Modal & Maintenance Parser =====
 let currentBillGroups = [];
 let currentPaidEntries = [];
+let currentIssues = [];
 let rawBillText = '';
 let activeBillsTab = 'expenses';
+let currentIssueSortIdx = 0;
+
+const ISSUE_SORT_MODES = [
+  { id: 'default', label: 'Default (File)', name: 'Default (File)' },
+  { id: 'title-asc', label: 'Title (A–Z)', name: 'Title (A–Z)' },
+  { id: 'title-desc', label: 'Title (Z–A)', name: 'Title (Z–A)' },
+  { id: 'start-newest', label: 'Start Date (Newest)', name: 'Start Date (Newest)' },
+  { id: 'start-oldest', label: 'Start Date (Oldest)', name: 'Start Date (Oldest)' },
+  { id: 'end-newest', label: 'End Date (Newest)', name: 'End Date (Newest)' },
+  { id: 'end-oldest', label: 'End Date (Oldest)', name: 'End Date (Oldest)' },
+  { id: 'status', label: 'Status (Pending First)', name: 'Status (Pending First)' }
+];
 
 const DEFAULT_MAINTENANCE_TEXT = `= Paid =
 
+- 29 September 2026: Monthly: 500
 - 4 September 2026: Monthly: 513
 - 31 July 2026: Monthly: 500
 + 29 July 2026: Drainage: 315
+- 1 July 2026: Monthly: 65
+- 30 April 2026: Monthly: 628
++ 11 April 2026: Sump & Tank Cleaning: 500
+- 9 April 2026: Motor Repair (Compensated): 890
+- 31 March 2026: Monthly: 430
++ 26 March 2026: Main Gate Keys: 194
 
 = Expenses =
 
+- October 2026
+
 - September 2026
+House Keeping: 3000
 
 - August 2026
 House Keeping: 3000
@@ -358,7 +386,62 @@ EB Expenses: 100
 Broom Stick: 200
 
 - 26 March 2026
-Main Gate Keys: 1550`;
+Main Gate Keys: 1550
+
+= Issues =
+
+Issue:
+StartDate:
+EndDate:
+Status:
+Context:
+
+Issue: Drainage Issue in Restroom
+StartDate: 05 October 2026
+EndDate: 09 October 2026
+Status: Completed
+Context: 
+- Water was not going in the bathroom Drainage.
+- There was too much reflex and water blockage.
+- Informed Owner and a Plumber who fixes issues at this place came. 
+- Plumber came and cleaned it with hose pipe.
+- The blockage was full of rocks and pieces of plastics.
+
+Issue: Tiles Broken in Bedroom
+StartDate: 12 September 2026
+EndDate: 03 October 2026
+Status: Completed
+Context:
+- When we locked the house and went to TTD for 5 day.
+- Upon returning found 6+ tiles broken in the bedroom.
+- This was the exact place where the sound came upon walking on it.
+- Upon patiently waiting for 2 weeks after informing, and following up twice.
+- Mason came and fixed the tiles. He removed all the broken tiles and laid new ones.
+
+Issue: Moist Electric Box
+StartDate: 1 April 2026
+EndDate: Nill
+Status: Pending
+Context:
+- The Electric Box which is inside the hall is having Moist/Water logging inside it.
+- It started after the very heavy rains in September.
+- Informed the owner, he initially ignored it. Later he came to check it by himself.
+- Then informed him in multiple times, and he said he would send someone.
+- Additionally he also asked for some kind of proof of the water leak or soaked condition.
+- Along with this have asked him to fix the Gadapa, Bathroom Step, and Tile Gaps.
+
+Issue: Painter Payment
+StartDate: 18 February 2026
+EndDate: 25 May 2026
+Status: Completed
+Context:
+- After putting in the money from my end for the Painter.
+- Owner came and compensated the same amount.
+- Initially he informed that it would be compensated in the rent payment.
+- Later he wanted the Painter to come in and sign and only then he would give the amount. 
+- This was weird, because the Painter himself was not reachable.
+- Informed the Onwer about the condition and asked him to do the needful.
+- He came, compensated the amount, after reaching out twice.`;
 
 function isSpecificDate(header) {
   // If header starts with a digit (e.g. "12 April 2026", "29 July 2026", "26 March 2026")
@@ -379,15 +462,22 @@ function splitMaintenanceSections(text) {
   let seenHeader = false;
   const paidLines = [];
   const expenseLines = [];
+  const issueLines = [];
   for (const raw of lines) {
     const t = raw.trim();
     if (/^=\s*paid\s*=/i.test(t)) { mode = 'paid'; seenHeader = true; continue; }
     if (/^=\s*expenses?\s*=/i.test(t)) { mode = 'expenses'; seenHeader = true; continue; }
+    if (/^=\s*issues?\s*=/i.test(t)) { mode = 'issues'; seenHeader = true; continue; }
     if (mode === 'paid') paidLines.push(raw);
+    else if (mode === 'issues') issueLines.push(raw);
     else expenseLines.push(raw);
   }
-  if (!seenHeader) return { paidText: '', expensesText: text };
-  return { paidText: paidLines.join('\n'), expensesText: expenseLines.join('\n') };
+  if (!seenHeader) return { paidText: '', expensesText: text, issuesText: '' };
+  return {
+    paidText: paidLines.join('\n'),
+    expensesText: expenseLines.join('\n'),
+    issuesText: issueLines.join('\n')
+  };
 }
 
 function parsePaid(text) {
@@ -497,6 +587,7 @@ function renderPaidEntries(entries, filterQuery = '') {
     : entries;
   if (!shown.length) {
     container.innerHTML = `<div class="card bill-empty-state">No paid entries matching "${filterQuery}"</div>`;
+    if (filterQuery.trim().length >= 2) showToast(`No collections matching "${filterQuery}"`, '🔍');
     return;
   }
   container.innerHTML = shown.map(e => `
@@ -594,6 +685,7 @@ function renderBillGroups(groups, filterQuery = '') {
 
   if (!displayedGroups.length) {
     container.innerHTML = `<div class="card bill-empty-state">No entries matching "${filterQuery}"</div>`;
+    if (filterQuery.trim().length >= 2) showToast(`No bills matching "${filterQuery}"`, '🔍');
     return;
   }
 
@@ -658,6 +750,340 @@ function renderBillGroups(groups, filterQuery = '') {
   }).join('');
 }
 
+// ===== Issues Parser & Calculations =====
+const MONTH_MAP = {
+  january: 0, jan: 0,
+  february: 1, feb: 1,
+  march: 2, mar: 2,
+  april: 3, apr: 3,
+  may: 4,
+  june: 5, jun: 5,
+  july: 6, jul: 6,
+  august: 7, aug: 7,
+  september: 8, sep: 8, sept: 8,
+  october: 9, oct: 9,
+  november: 10, nov: 10,
+  december: 11, dec: 11
+};
+
+function parseIssueDate(str) {
+  if (!str) return null;
+  const clean = str.trim().toLowerCase();
+  if (['nill', 'nil', 'none', '-', 'pending', 'ongoing', ''].includes(clean)) {
+    return null;
+  }
+  const match = str.trim().match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+  if (match) {
+    const day = parseInt(match[1], 10);
+    const monthKey = match[2].toLowerCase();
+    const year = parseInt(match[3], 10);
+    if (monthKey in MONTH_MAP) {
+      return new Date(year, MONTH_MAP[monthKey], day);
+    }
+  }
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function calculateIssueDuration(startDateStr, endDateStr, status) {
+  const start = parseIssueDate(startDateStr);
+  const end = parseIssueDate(endDateStr);
+  if (!start) return { text: 'N/A', days: null, isOngoing: false };
+
+  if (!end) {
+    const now = new Date();
+    const diffTime = now - start;
+    const days = Math.max(0, Math.round(diffTime / 86400000));
+    return {
+      text: `${days} day${days !== 1 ? 's' : ''} (Ongoing)`,
+      shortText: `${days}d (Ongoing)`,
+      days,
+      isOngoing: true
+    };
+  }
+
+  const diffTime = Math.abs(end - start);
+  const days = Math.round(diffTime / 86400000);
+  const text = days === 0 ? 'Same day' : `${days} day${days !== 1 ? 's' : ''}`;
+  return {
+    text,
+    shortText: days === 0 ? '0d' : `${days}d`,
+    days,
+    isOngoing: false
+  };
+}
+
+function isValidIssue(issue) {
+  if (!issue) return false;
+  const title = (issue.title || '').trim();
+  // The first empty one is for a template so ignore it, only pick the ones which has data or details in them.
+  if (!title) return false;
+  const hasStart = Boolean((issue.startDate || '').trim());
+  const hasEnd = Boolean((issue.endDate || '').trim());
+  const hasStatus = Boolean((issue.status || '').trim());
+  const hasContext = Boolean(issue.context && issue.context.length > 0);
+  return hasStart || hasEnd || hasStatus || hasContext;
+}
+
+function parseIssues(text) {
+  const issues = [];
+  const lines = (text || '').split('\n');
+  let current = null;
+  let inContext = false;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+
+    if (/^Issue\s*:/i.test(line)) {
+      if (current && isValidIssue(current)) {
+        current.fileIndex = issues.length;
+        issues.push(current);
+      }
+      const title = line.replace(/^Issue\s*:\s*/i, '').trim();
+      current = {
+        title,
+        startDate: '',
+        endDate: '',
+        status: '',
+        context: []
+      };
+      inContext = false;
+      continue;
+    }
+
+    if (!current) continue;
+
+    if (/^StartDate\s*:/i.test(line)) {
+      current.startDate = line.replace(/^StartDate\s*:\s*/i, '').trim();
+      inContext = false;
+    } else if (/^EndDate\s*:/i.test(line)) {
+      current.endDate = line.replace(/^EndDate\s*:\s*/i, '').trim();
+      inContext = false;
+    } else if (/^Status\s*:/i.test(line)) {
+      current.status = line.replace(/^Status\s*:\s*/i, '').trim();
+      inContext = false;
+    } else if (/^Context\s*:/i.test(line)) {
+      inContext = true;
+      const immediate = line.replace(/^Context\s*:\s*/i, '').trim();
+      if (immediate) {
+        current.context.push(immediate.replace(/^[+\-•*]\s*/, '').trim());
+      }
+    } else if (inContext) {
+      if (line.startsWith('-') || line.startsWith('+') || line.startsWith('•') || line.startsWith('*')) {
+        current.context.push(line.replace(/^[+\-•*]\s*/, '').trim());
+      } else if (line) {
+        current.context.push(line);
+      }
+    }
+  }
+
+  if (current && isValidIssue(current)) {
+    current.fileIndex = issues.length;
+    issues.push(current);
+  }
+
+  return issues;
+}
+
+function sortIssues(issues, modeId) {
+  const list = [...issues];
+  switch (modeId) {
+    case 'default':
+      return list.sort((a, b) => (a.fileIndex ?? 0) - (b.fileIndex ?? 0));
+
+    case 'title-asc':
+      return list.sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
+
+    case 'title-desc':
+      return list.sort((a, b) => b.title.localeCompare(a.title, undefined, { sensitivity: 'base' }));
+
+    case 'start-newest':
+      return list.sort((a, b) => {
+        const da = parseIssueDate(a.startDate);
+        const db = parseIssueDate(b.startDate);
+        return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+      });
+
+    case 'start-oldest':
+      return list.sort((a, b) => {
+        const da = parseIssueDate(a.startDate);
+        const db = parseIssueDate(b.startDate);
+        const ta = da ? da.getTime() : Infinity;
+        const tb = db ? db.getTime() : Infinity;
+        return ta - tb;
+      });
+
+    case 'end-newest':
+      return list.sort((a, b) => {
+        const da = parseIssueDate(a.endDate);
+        const db = parseIssueDate(b.endDate);
+        const ta = da ? da.getTime() : (a.status?.toLowerCase().includes('pending') ? Number.MAX_SAFE_INTEGER : 0);
+        const tb = db ? db.getTime() : (b.status?.toLowerCase().includes('pending') ? Number.MAX_SAFE_INTEGER : 0);
+        return tb - ta;
+      });
+
+    case 'end-oldest':
+      return list.sort((a, b) => {
+        const da = parseIssueDate(a.endDate);
+        const db = parseIssueDate(b.endDate);
+        // Completed/resolved oldest dates first; pending/Nill issues without end dates at end
+        const ta = da ? da.getTime() : Number.MAX_SAFE_INTEGER;
+        const tb = db ? db.getTime() : Number.MAX_SAFE_INTEGER;
+        return ta - tb;
+      });
+
+    case 'status':
+      return list.sort((a, b) => {
+        const sa = (a.status || '').toLowerCase();
+        const sb = (b.status || '').toLowerCase();
+        const aPending = sa.includes('pending') ? 1 : 0;
+        const bPending = sb.includes('pending') ? 1 : 0;
+        if (aPending !== bPending) return bPending - aPending;
+        return (a.fileIndex ?? 0) - (b.fileIndex ?? 0);
+      });
+
+    default:
+      return list;
+  }
+}
+
+function renderIssueStats(issues) {
+  const statsContainer = $('#issueStatsGrid');
+  if (!statsContainer) return;
+
+  const total = issues.length;
+  const completed = issues.filter(i => (i.status || '').toLowerCase().includes('completed')).length;
+  const pending = issues.filter(i => (i.status || '').toLowerCase().includes('pending')).length;
+
+  statsContainer.innerHTML = `
+    <div class="status-item">
+      <span class="status-label">Total Issues Logged</span>
+      <span class="status-value">${total}</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Resolved</span>
+      <span class="status-value" style="color:var(--green); font-weight:700;">✅ ${completed}</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Pending</span>
+      <span class="status-value" style="color:var(--orange); font-weight:700;">⏳ ${pending}</span>
+    </div>
+  `;
+}
+
+function renderIssues(filterQuery = '') {
+  const container = $('#issuesContent');
+  if (!container) return;
+
+  renderIssueStats(currentIssues);
+
+  if (!currentIssues.length) {
+    container.innerHTML = '<div class="card bill-empty-state">No issues logged in maintenance.txt</div>';
+    return;
+  }
+
+  const q = filterQuery.toLowerCase().trim();
+  let displayed = currentIssues;
+  if (q) {
+    displayed = currentIssues.filter(issue => {
+      if (issue.title.toLowerCase().includes(q)) return true;
+      if (issue.status.toLowerCase().includes(q)) return true;
+      if (issue.startDate.toLowerCase().includes(q)) return true;
+      if (issue.endDate.toLowerCase().includes(q)) return true;
+      if (issue.context.some(c => c.toLowerCase().includes(q))) return true;
+      return false;
+    });
+  }
+
+  if (!displayed.length) {
+    container.innerHTML = `<div class="card bill-empty-state">No issues matching "${filterQuery}"</div>`;
+    if (filterQuery.trim().length >= 2) showToast(`No issues matching "${filterQuery}"`, '🔍');
+    return;
+  }
+
+  const currentMode = ISSUE_SORT_MODES[currentIssueSortIdx];
+  const sorted = sortIssues(displayed, currentMode.id);
+
+  container.innerHTML = sorted.map(issue => {
+    const isPending = (issue.status || '').toLowerCase().includes('pending');
+    const isCompleted = (issue.status || '').toLowerCase().includes('completed');
+    const duration = calculateIssueDuration(issue.startDate, issue.endDate, issue.status);
+
+    const contextHtml = issue.context.length
+      ? `
+        <div class="issue-context-box">
+          <span class="issue-context-title">Context & Log Details</span>
+          <ul class="issue-context-list">
+            ${issue.context.map(c => `<li class="issue-context-item">${c}</li>`).join('')}
+          </ul>
+        </div>
+      `
+      : '';
+
+    return `
+      <section class="card issue-card ${isPending ? 'issue-card-pending' : 'issue-card-completed'}">
+        <div class="issue-card-header">
+          <div class="issue-card-title-group">
+            <h2 class="issue-card-title">${isPending ? '⚠️' : '🛠️'} ${issue.title}</h2>
+          </div>
+          <div class="issue-badges-row">
+            ${isPending
+              ? '<span class="issue-badge issue-badge-pending">⏳ Pending</span>'
+              : '<span class="issue-badge issue-badge-completed">✅ Completed</span>'}
+            <span class="issue-duration-pill ${duration.isOngoing ? 'ongoing' : ''}" title="Duration calculated from start and end date">
+              ⏱️ ${duration.text}
+            </span>
+          </div>
+        </div>
+
+        <div class="issue-dates-bar">
+          <span class="issue-date-item">📅 <strong>Start:</strong> ${issue.startDate || 'N/A'}</span>
+          <span class="date-separator">→</span>
+          <span class="issue-date-item">🏁 <strong>End:</strong> ${issue.endDate || 'Nill'}</span>
+        </div>
+
+        ${contextHtml}
+      </section>
+    `;
+  }).join('');
+}
+
+function cycleIssueSort() {
+  currentIssueSortIdx = (currentIssueSortIdx + 1) % ISSUE_SORT_MODES.length;
+  const mode = ISSUE_SORT_MODES[currentIssueSortIdx];
+  const btn = $('#issueSortBtn');
+  if (btn) btn.textContent = `🔀 Sort: ${mode.label}`;
+  const searchVal = $('#issueSearchInput') ? $('#issueSearchInput').value : '';
+  renderIssues(searchVal);
+  showToast(`Sorted by ${mode.name}`, '🔀');
+}
+
+function copyIssuesSummary() {
+  if (!currentIssues.length) {
+    showToast('No issues to copy', '📋');
+    return;
+  }
+  let summary = `54GNs Apartments - Flat 7 Issues Log\n\n`;
+  for (const issue of currentIssues) {
+    const duration = calculateIssueDuration(issue.startDate, issue.endDate, issue.status);
+    summary += `• ${issue.title} [${issue.status || 'Logged'}] (${duration.text})\n`;
+    summary += `  Start: ${issue.startDate || '-'} → End: ${issue.endDate || 'Nill'}\n`;
+    if (issue.context.length) {
+      summary += `  Context:\n`;
+      for (const c of issue.context) {
+        summary += `    - ${c}\n`;
+      }
+    }
+    summary += `\n`;
+  }
+  summary += `📌 Note: These are the issues and maintenance concerns faced and reported by Flat 7 (Krishna Kanth B).`;
+
+  navigator.clipboard.writeText(summary).then(() => {
+    showToast('Copied issues summary!', '📋');
+  });
+}
+
 async function loadAndRenderBills() {
   const content = $('#billContent');
   let text = '';
@@ -667,19 +1093,24 @@ async function loadAndRenderBills() {
     text = await res.text();
   } catch (err) {
     text = DEFAULT_MAINTENANCE_TEXT;
+    showToast('Offline mode: using cached records', '📶');
   }
 
   if (text && text.trim()) {
     rawBillText = text;
-    const { paidText, expensesText } = splitMaintenanceSections(rawBillText);
+    const { paidText, expensesText, issuesText } = splitMaintenanceSections(rawBillText);
     currentBillGroups = parseMaintenance(expensesText);
     currentPaidEntries = parsePaid(paidText);
+    currentIssues = parseIssues(issuesText);
     renderBillStats(currentBillGroups);
     renderPaidStats(currentPaidEntries);
+    renderIssueStats(currentIssues);
     const searchVal = $('#billSearchInput') ? $('#billSearchInput').value : '';
     renderBillGroups(currentBillGroups, searchVal);
     const paidSearchVal = $('#paidSearchInput') ? $('#paidSearchInput').value : '';
     renderPaidEntries(currentPaidEntries, paidSearchVal);
+    const issueSearchVal = $('#issueSearchInput') ? $('#issueSearchInput').value : '';
+    renderIssues(issueSearchVal);
   } else {
     content.innerHTML = '<div class="card bill-empty-state">No billing data available.</div>';
   }
@@ -689,11 +1120,13 @@ async function loadAndRenderBills() {
 function showView(viewName, updateHistory = true) {
   const rotationView = $('#rotationView');
   const billsView = $('#billsView');
+  const issuesView = $('#issuesView');
   const backBtn = $('#backBtn');
   const pageTitle = $('#pageTitle');
 
   if (viewName === 'bills') {
     rotationView.classList.add('hidden');
+    issuesView.classList.add('hidden');
     billsView.classList.remove('hidden');
     backBtn.classList.remove('hidden');
     pageTitle.textContent = 'Maintenance Bills';
@@ -701,12 +1134,28 @@ function showView(viewName, updateHistory = true) {
       history.pushState({ view: 'bills' }, '', '#bills');
     }
     loadAndRenderBills();
+  } else if (viewName === 'issues') {
+    rotationView.classList.add('hidden');
+    billsView.classList.add('hidden');
+    issuesView.classList.remove('hidden');
+    backBtn.classList.remove('hidden');
+    pageTitle.textContent = 'Maintenance Issues';
+    if (updateHistory && window.location.hash !== '#issues') {
+      history.pushState({ view: 'issues' }, '', '#issues');
+    }
+    if (!currentIssues.length) {
+      loadAndRenderBills();
+    } else {
+      const issueSearchVal = $('#issueSearchInput') ? $('#issueSearchInput').value : '';
+      renderIssues(issueSearchVal);
+    }
   } else {
     billsView.classList.add('hidden');
+    issuesView.classList.add('hidden');
     rotationView.classList.remove('hidden');
     backBtn.classList.add('hidden');
     pageTitle.textContent = '54GNs Apartments Water Motor Rotation';
-    if (updateHistory && window.location.hash === '#bills') {
+    if (updateHistory && (window.location.hash === '#bills' || window.location.hash === '#issues')) {
       history.pushState('', document.title, window.location.pathname + window.location.search);
     }
   }
@@ -763,7 +1212,8 @@ function copyBillsSummary() {
 }
 
 function printCurrentView() {
-  window.print();
+  showToast('Preparing printable document...', '🖨️');
+  setTimeout(() => window.print(), 250);
 }
 
 // ===== Actions =====
@@ -811,6 +1261,7 @@ function exportCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = 'motor-rotation-schedule.csv';
   a.click();
+  showToast('Exported motor rotation schedule (CSV)!', '📊');
 }
 
 // ===== Event Listeners & Init =====
@@ -831,11 +1282,17 @@ function init() {
   $('#themeToggle').addEventListener('click', cycleTheme);
   $('#printBtn').addEventListener('click', printCurrentView);
   $('#billBtn').addEventListener('click', () => showView('bills'));
+  $('#issuesBtn').addEventListener('click', () => showView('issues'));
   $('#backBtn').addEventListener('click', () => showView('rotation'));
   $('#billCopyBtn').addEventListener('click', copyBillsSummary);
   $('#billPrintBtn').addEventListener('click', printCurrentView);
   $('#expensesTabBtn').addEventListener('click', () => switchBillsTab('expenses'));
   $('#paidTabBtn').addEventListener('click', () => switchBillsTab('paid'));
+
+  // Issues page actions
+  $('#issueSortBtn').addEventListener('click', cycleIssueSort);
+  $('#issueCopyBtn').addEventListener('click', copyIssuesSummary);
+  $('#issuePrintBtn').addEventListener('click', printCurrentView);
 
   // Paid breakdown modal
   const paidClose = $('#paidBreakdownClose');
@@ -872,13 +1329,29 @@ function init() {
     });
   }
 
+  // Search filter for issues
+  const issueSearch = $('#issueSearchInput');
+  if (issueSearch) {
+    let issueSearchTimer;
+    issueSearch.addEventListener('input', (e) => {
+      clearTimeout(issueSearchTimer);
+      issueSearchTimer = setTimeout(() => {
+        renderIssues(e.target.value);
+      }, 150);
+    });
+  }
+
   // Hash deep-linking
   if (window.location.hash === '#bills') {
     showView('bills', false);
+  } else if (window.location.hash === '#issues') {
+    showView('issues', false);
   }
   window.addEventListener('popstate', () => {
     if (window.location.hash === '#bills') {
       showView('bills', false);
+    } else if (window.location.hash === '#issues') {
+      showView('issues', false);
     } else {
       showView('rotation', false);
     }
@@ -898,6 +1371,13 @@ function init() {
     searchTimeout = setTimeout(() => renderSearch(e.target.value), 200);
   });
 
+  // Network status listeners
+  window.addEventListener('offline', () => showToast('You are currently offline', '📶'));
+  window.addEventListener('online', () => {
+    showToast('Back online! Syncing records...', '🌐');
+    loadAndRenderBills();
+  });
+
   // Daily refresh
   setInterval(renderStatus, 86400000);
 
@@ -912,5 +1392,16 @@ document.addEventListener('DOMContentLoaded', init);
 
 // Service Worker
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => { });
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      if (newWorker) {
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showToast('New version available! Reload to apply.', '🚀');
+          }
+        });
+      }
+    });
+  }).catch(() => { });
 }

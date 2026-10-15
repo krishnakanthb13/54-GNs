@@ -26,7 +26,7 @@ The application is engineered as a zero-build, zero-dependency Progressive Web A
               +-------------------+-------------------+
               |                   |                   |
       assets/js/script.js  assets/css/styles.css    sw.js
-       (State & Logic)     (6 Themes & Layout)  (PWA Cache v11)
+       (State & Logic)     (6 Themes & Layout)  (PWA Cache v13)
               ^
               | Fetch with cache-busting (?t=Date.now())
         maintenance.txt
@@ -100,12 +100,12 @@ The application is engineered as a zero-build, zero-dependency Progressive Web A
 
 ## 4. Offline & Cache Strategy (`sw.js`)
 
-- **Cache Identifier**: `motor-duty-v11`.
+- **Cache Identifier**: `motor-duty-v13`.
 - **Pre-cached Assets**:
   - Root: `./`, `./index.html`, `./manifest.json`, `./favicon.ico`
   - Core Bundles: `./assets/css/styles.css`, `./assets/js/script.js`
   - Graphics & Icons: `./assets/icons/favicon.ico`, `./assets/icons/favicon.svg`, `./assets/icons/apple-touch-icon.png`, `./assets/icons/icon-192.png`, `./assets/icons/icon-512.png`
-- **Dynamic Bypass**: Explicitly intercepts and bypasses caching for any request to `maintenance.txt`, ensuring instant data updates across all clients without PWA cache invalidation friction.
+- **Network-First Data**: Intercepts requests to `maintenance.txt`, always fetching the freshest copy when online and caching the last good response as an offline fallback — so data updates propagate instantly across clients without cache-invalidation friction.
 
 ---
 

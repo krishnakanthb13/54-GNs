@@ -579,12 +579,29 @@ body {
 }
 
 .action-btn:hover {
-  background: var(--accent-dim);
+  background-color: var(--accent-dim);
   border-color: var(--accent);
 }
 
 .action-btn:active {
   transform: scale(0.97);
+}
+
+/* Issues sort dropdown — reuses .action-btn sizing */
+.sort-select {
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-dim) 50%), linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 30px;
+}
+
+.sort-select option {
+  background: var(--bg);
+  color: var(--text);
 }
 
 .icon-btn {

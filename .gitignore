@@ -1,1 +1,4 @@
 .mimocode/
+
+# Personal WhatsApp export — keep out of the repository
+WhatsApp*.txt

@@ -1,7 +1,7 @@
 {
   "name": "54GNs Apartments Water Motor Rotation",
   "short_name": "Motor Rotation",
-  "description": "Automatically calculates weekly water motor rotation schedule for apartment residents.",
+  "description": "Automatically calculates the weekly water motor rotation schedule and tracks building maintenance bills, collections, and repair issues for apartment residents.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

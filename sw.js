@@ -1,4 +1,4 @@
-const CACHE = 'motor-duty-v12';
+const CACHE = 'motor-duty-v13';
 const ASSETS = [
   './',
   './index.html',
@@ -29,9 +29,20 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-  // Never cache maintenance.txt so edits are always immediately visible
+  // Network-first for maintenance.txt: always fetch the freshest copy when online,
+  // and fall back to the last good cached copy when offline.
   if (url.pathname.endsWith('maintenance.txt')) {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put('./maintenance.txt', copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match('./maintenance.txt'))
+    );
     return;
   }
   e.respondWith(

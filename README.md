@@ -24,7 +24,7 @@ A minimal, self-contained, high-performance Progressive Web App (PWA) for managi
 - **Export & Share**: Quick actions to Copy week summary, Native Share (WhatsApp/mobile), CSV Export, and PDF/Print.
 
 ### 🧾 Maintenance Bills (`maintenance.txt`)
-- **Auto-Synced with `maintenance.txt`**: Simply edit `maintenance.txt` to add expenses or collections; the app fetches it with cache-busting (`?t=Date.now()`) and the Service Worker never caches it, so updates appear immediately without rebuilds.
+- **Auto-Synced with `maintenance.txt`**: Simply edit `maintenance.txt` to add expenses, collections, or issues; the app fetches it with cache-busting (`?t=Date.now()`) using a **network-first** strategy — the Service Worker only keeps the last good copy as an **offline fallback**, so edits appear immediately when online without rebuilds.
 - **Dedicated Bills Page (`#bills`)**: Full-page view with header `← Back` button and URL deep-linking (`#bills`). Opened from the header 🧾 button.
 - **Expenses / Paid Tabs (inside Bills page only)**:
   - `📅 Expenses` (default) — existing expense behavior, unchanged.
@@ -55,7 +55,7 @@ A minimal, self-contained, high-performance Progressive Web App (PWA) for managi
 - **Dedicated Issues Page**: Accessible via the header `⚠️` button or `#issues` URL deep-linking with header `← Back` navigation.
 - **Automatic Duration Pill (`⏱️`)**: Automatically calculates elapsed duration between `StartDate` and `EndDate` (e.g. `⏱️ 4 days`), or from `StartDate` to today if pending/ongoing (`⏱️ 197 days (Ongoing)`).
 - **Template Skipping**: Automatically filters out empty issue templates (such as blank templates left at the top of the section for formatting), only displaying issues with actual logged data.
-- **8-Mode Cycling Sort Button (`🔀 Sort`)**:
+- **9-Mode Sort Dropdown (`🔀 Sort`)**:
   - `Default (File)`: Original order as listed in the maintenance text file.
   - `Title (A–Z)`: Alphabetical ascending by issue name.
   - `Title (Z–A)`: Alphabetical descending by issue name.
@@ -64,6 +64,7 @@ A minimal, self-contained, high-performance Progressive Web App (PWA) for managi
   - `End Date (Newest)`: Most recently completed issues first (ongoing issues listed first).
   - `End Date (Oldest)`: Earliest completed issues first (pending issues listed last).
   - `Status (Pending First)`: Prioritizes unresolved/pending issues over completed ones.
+  - `Status (Completed First)`: Lists resolved/completed issues before unresolved/pending ones.
 - **Summary Metrics Card**:
   - **Total Issues Logged**
   - **Resolved (`✅`)**
@@ -90,11 +91,11 @@ Cycles through **6 curated themes** across dark and light modes with persistent 
 ### 🔔 Toast Notification & Resident Feedback System
 A lightweight, glassmorphic toast notification system (`#toastContainer`) providing immediate, non-intrusive feedback across the app:
 - **Clipboard & Sharing Actions**: Instant confirmations for copying duty week info, maintenance bills summary, paid collection logs, and issues summaries (`📋 Copied...`). Empty data guards notify when there is nothing to copy.
-- **Cycling Sort Feedback**: Displays active sort criteria when cycling through issue sort orders (`🔀 Sorted by ...`).
+- **Sort Feedback**: Displays the active sort criteria when the issue sort order changes (`🔀 Sorted by ...`).
 - **File Downloads & Print**: Confirms CSV export generation (`📊 Exported motor rotation schedule (CSV)!`) and print dialog preparation (`🖨️ Preparing printable document...`).
 - **Theme Cycling Feedback**: Confirms every theme switch (e.g. `🌙 Theme: Obsidian Violet (Dark)`).
 - **Live Search Guard**: Alerts residents when search filters yield zero matches across flats, bills, collections, or issues (`🔍 No flat/bills/collections/issues matching "..."`).
-- **Network & Offline Awareness**: Informs residents when connection is lost (`📶 You are currently offline`), when cached records are used (`📶 Offline mode: using cached records`), and when syncing back online (`🌐 Back online! Syncing records...`).
+- **Network & Offline Awareness**: Informs residents when connection is lost (`📶 You are currently offline`), when no cached records exist yet (`📶 Offline: no cached records available yet`), and when syncing back online (`🌐 Back online! Syncing records...`). While offline, the Service Worker serves the last cached `maintenance.txt`.
 - **PWA Lifecycle Updates**: Detects when a new Service Worker update is downloaded and ready (`🚀 New version available! Reload to apply.`).
 
 ---
@@ -319,9 +320,9 @@ Context:
 │   └── seed-prompt.txt       # Foundation prompt & domain rules
 ├── favicon.ico               # Root favicon for Vercel & search engine detection
 ├── index.html                # Semantic HTML5: rotation view, tabbed Bills view, Issues view, modal, toast container
-├── maintenance.txt           # `= Paid =` collections + `= Expenses =` billing groups + `= Issues =` log (never cached by SW)
+├── maintenance.txt           # `= Paid =` collections + `= Expenses =` billing groups + `= Issues =` log (network-first; last good copy cached for offline)
 ├── manifest.json             # Progressive Web App (PWA) configuration (relative paths)
-├── sw.js                     # Service Worker for offline caching (bypasses maintenance.txt)
+├── sw.js                     # Service Worker: app-shell cache + network-first maintenance.txt with offline fallback
 ├── vercel.json               # Vercel deployment configuration (headers, caching, cleanUrls)
 ├── README.md                 # Documentation & user guide
 └── LICENSE                   # MIT License
@@ -331,7 +332,7 @@ Key DOM/JS hooks:
 - Bills tabs: `#expensesTabBtn`, `#paidTabBtn`, `#expensesPane`, `#paidPane`, `#expensesSummaryCard`, `#paidSummaryCard`
 - Expenses: `#billStatsGrid`, `#billSearchInput`, `#billContent`
 - Paid: `#paidStatsGrid`, `#paidSearchInput`, `#paidContent`, `#paidInfoBtn`, `.bill-note-card`, `#paidBreakdownModal`, `#paidBreakdownBody`, `#paidBreakdownClose`
-- Issues: `#issuesView`, `#issuesSummaryCard`, `#issueStatsGrid`, `#issueSortBtn`, `#issueSearchInput`, `#issuesContent`, `.issue-note-card`, `#issueCopyBtn`, `#issuePrintBtn`
+- Issues: `#issuesView`, `#issuesSummaryCard`, `#issueStatsGrid`, `#issueSortSelect`, `#issueSearchInput`, `#issuesContent`, `.issue-note-card`, `#issueCopyBtn`, `#issuePrintBtn`
 - Views & Nav: `#rotationView`, `#billsView`, `#issuesView`, `#backBtn`, `#billBtn`, `#issuesBtn`, deep-links `#bills` and `#issues`
 
 ---

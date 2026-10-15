@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
-    content="54GNs Apartments Water Motor Rotation - Automatically calculates weekly water motor rotation schedule for apartment residents.">
-  <meta name="theme-color" content="#0f172a">
+    content="54GNs Apartments - Automatically calculates the weekly water motor rotation schedule and tracks building maintenance bills, collections, and repair issues for apartment residents.">
+  <meta name="theme-color" content="#0b1329">
   <title>54GNs Apartments Water Motor Rotation</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -228,9 +228,9 @@
         <div id="issueStatsGrid" class="status-grid bill-stats-grid"></div>
       </section>
 
-      <!-- Actions & Cycling Sort -->
+      <!-- Actions & Sort Dropdown -->
       <section class="actions-row" aria-label="Issue actions">
-        <button id="issueSortBtn" class="action-btn" title="Click to cycle sort order">🔀 Sort: Default (File)</button>
+        <select id="issueSortSelect" class="action-btn sort-select" aria-label="Sort issues" title="Sort issues"></select>
         <button id="issueCopyBtn" class="action-btn">📋 Copy Issues</button>
         <button id="issuePrintBtn" class="action-btn">📄 PDF / Print</button>
       </section>

@@ -48,10 +48,6 @@ function fmtShort(d) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
-function fmtWithYear(d) {
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
 function fmtFull(d) {
   return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 }
@@ -93,6 +89,16 @@ function getWeekRange(date) {
 // ===== DOM =====
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
+
+// Escape untrusted text before inserting into HTML (search queries, file-derived values)
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 // ===== Render Functions =====
 function renderStatus() {
@@ -145,13 +151,16 @@ function renderCalendar() {
 
   const { start: dutyStart, end: dutyEnd } = getWeekRange(now);
   const today = now.getDate();
+  const dutyStartTime = new Date(dutyStart.getFullYear(), dutyStart.getMonth(), dutyStart.getDate()).getTime();
+  const dutyEndTime = new Date(dutyEnd.getFullYear(), dutyEnd.getMonth(), dutyEnd.getDate()).getTime();
 
   let html = '';
   for (let i = 0; i < startDow; i++) html += '<div class="cal-day empty"></div>';
   for (let d = 1; d <= daysInMonth; d++) {
     let cls = 'cal-day';
+    const cellTime = new Date(year, month, d).getTime();
     if (d === today) cls += ' today';
-    else if (month === dutyStart.getMonth() && year === dutyStart.getFullYear() && d >= dutyStart.getDate() && d <= dutyEnd.getDate()) cls += ' duty-week';
+    else if (cellTime >= dutyStartTime && cellTime <= dutyEndTime) cls += ' duty-week';
     html += `<div class="${cls}">${d}</div>`;
   }
   $('#calDays').innerHTML = html;
@@ -192,10 +201,10 @@ function renderSchedule(containerId, weeks, direction) {
     html.push(`
       <div class="schedule-tr">
         <span class="schedule-td week">W${weekNum}</span>
-        <span class="schedule-td flat">${flatName}</span>
-        <span class="schedule-td tenant" title="${tenant || ''}">${tenant || '-'}</span>
-        <span class="schedule-td from">${fmtWithYear(start)}</span>
-        <span class="schedule-td to">${fmtWithYear(end)}</span>
+        <span class="schedule-td flat">${escapeHtml(flatName)}</span>
+        <span class="schedule-td tenant" title="${escapeHtml(tenant || '')}">${escapeHtml(tenant || '-')}</span>
+        <span class="schedule-td from">${fmt(start)}</span>
+        <span class="schedule-td to">${fmt(end)}</span>
       </div>
     `);
   }
@@ -211,7 +220,7 @@ function renderSearch(query) {
   if (!flatObj) {
     result.textContent = 'No flat found.';
     result.classList.remove('hidden');
-    if (query.trim().length >= 2) showToast(`No flat matching "${query}"`, '🔍');
+    if (query.trim().length >= 2) notifyNoMatch('flats', `No flat matching "${query}"`, query);
     return;
   }
 
@@ -236,11 +245,11 @@ function renderSearch(query) {
     const w = weeksUntil + (i - 1) * FLATS.length;
     const d = addDays(now, w * 7);
     const { start: s, end: e } = getWeekRange(d);
-    upcoming += `<div style="margin-top:6px;font-size:0.82rem;">• ${fmtWithYear(s)} – ${fmtWithYear(e)}</div>`;
+    upcoming += `<div style="margin-top:6px;font-size:0.82rem;">• ${fmt(s)} – ${fmt(e)}</div>`;
   }
 
   result.innerHTML = `
-    <strong>${flatDisplay}</strong>
+    <strong>${escapeHtml(flatDisplay)}</strong>
     <div style="margin-top:8px;">
       <div>Next duty: <strong>${fmt(nextStart)} – ${fmt(nextEnd)}</strong> (${weeksUntil} week${weeksUntil > 1 ? 's' : ''} away)</div>
       <div>Previous: ${fmt(prevStart)} – ${fmt(prevEnd)}</div>
@@ -257,11 +266,28 @@ function showToast(message, icon = '') {
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.innerHTML = `${icon ? `<span>${icon}</span>` : ''}<span>${message}</span>`;
+  if (icon) {
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = icon;
+    toast.appendChild(iconSpan);
+  }
+  const msgSpan = document.createElement('span');
+  msgSpan.textContent = message;
+  toast.appendChild(msgSpan);
   container.appendChild(toast);
   setTimeout(() => {
     toast.remove();
   }, 2500);
+}
+
+// Fire a "no match" toast only when the query actually changes (avoids per-keystroke spam)
+const lastNoMatchQuery = {};
+function notifyNoMatch(key, message, query) {
+  const q = query.trim();
+  if (q.length >= 2 && lastNoMatchQuery[key] !== q) {
+    lastNoMatchQuery[key] = q;
+    showToast(message, '🔍');
+  }
 }
 
 // ===== Theme System =====
@@ -319,7 +345,8 @@ let currentPaidEntries = [];
 let currentIssues = [];
 let rawBillText = '';
 let activeBillsTab = 'expenses';
-let currentIssueSortIdx = 0;
+let currentIssueSortId = 'default';
+let offlineBillsNotified = false;
 
 const ISSUE_SORT_MODES = [
   { id: 'default', label: 'Default (File)', name: 'Default (File)' },
@@ -329,119 +356,12 @@ const ISSUE_SORT_MODES = [
   { id: 'start-oldest', label: 'Start Date (Oldest)', name: 'Start Date (Oldest)' },
   { id: 'end-newest', label: 'End Date (Newest)', name: 'End Date (Newest)' },
   { id: 'end-oldest', label: 'End Date (Oldest)', name: 'End Date (Oldest)' },
-  { id: 'status', label: 'Status (Pending First)', name: 'Status (Pending First)' }
+  { id: 'status', label: 'Status (Pending First)', name: 'Status (Pending First)' },
+  { id: 'status-desc', label: 'Status (Completed First)', name: 'Status (Completed First)' }
 ];
 
-const DEFAULT_MAINTENANCE_TEXT = `= Paid =
-
-- 29 September 2026: Monthly: 500
-- 4 September 2026: Monthly: 513
-- 31 July 2026: Monthly: 500
-+ 29 July 2026: Drainage: 315
-- 1 July 2026: Monthly: 65
-- 30 April 2026: Monthly: 628
-+ 11 April 2026: Sump & Tank Cleaning: 500
-- 9 April 2026: Motor Repair (Compensated): 890
-- 31 March 2026: Monthly: 430
-+ 26 March 2026: Main Gate Keys: 194
-
-= Expenses =
-
-- October 2026
-
-- September 2026
-House Keeping: 3000
-
-- August 2026
-House Keeping: 3000
-Electricity Bill: 906
-Broom Stick: 200
-
-- July 2026
-House Keeping: 3000
-
-- 29 July 2026
-Drainage Cleaning: 2500
-
-- June 2026
-House Keeping: 3000
-Electricity Bill: 823
-
-- May 2026
-House Keeping: 2000
-Drainage Cleaning: 1200
-
-- April 2026
-House Keeping: 3000
-Electricity Bill: 1729
-Flowers: 250
-
-- 12 April 2026
-Sump & Tank Cleaning: 3500
-
-- March 2026
-House Keeping: 3000
-Flowers: 110
-EB Expenses: 100
-Broom Stick: 200
-
-- 26 March 2026
-Main Gate Keys: 1550
-
-= Issues =
-
-Issue:
-StartDate:
-EndDate:
-Status:
-Context:
-
-Issue: Drainage Issue in Restroom
-StartDate: 05 October 2026
-EndDate: 09 October 2026
-Status: Completed
-Context: 
-- Water was not going in the bathroom Drainage.
-- There was too much reflex and water blockage.
-- Informed Owner and a Plumber who fixes issues at this place came. 
-- Plumber came and cleaned it with hose pipe.
-- The blockage was full of rocks and pieces of plastics.
-
-Issue: Tiles Broken in Bedroom
-StartDate: 12 September 2026
-EndDate: 03 October 2026
-Status: Completed
-Context:
-- When we locked the house and went to TTD for 5 day.
-- Upon returning found 6+ tiles broken in the bedroom.
-- This was the exact place where the sound came upon walking on it.
-- Upon patiently waiting for 2 weeks after informing, and following up twice.
-- Mason came and fixed the tiles. He removed all the broken tiles and laid new ones.
-
-Issue: Moist Electric Box
-StartDate: 1 April 2026
-EndDate: Nill
-Status: Pending
-Context:
-- The Electric Box which is inside the hall is having Moist/Water logging inside it.
-- It started after the very heavy rains in September.
-- Informed the owner, he initially ignored it. Later he came to check it by himself.
-- Then informed him in multiple times, and he said he would send someone.
-- Additionally he also asked for some kind of proof of the water leak or soaked condition.
-- Along with this have asked him to fix the Gadapa, Bathroom Step, and Tile Gaps.
-
-Issue: Painter Payment
-StartDate: 18 February 2026
-EndDate: 25 May 2026
-Status: Completed
-Context:
-- After putting in the money from my end for the Painter.
-- Owner came and compensated the same amount.
-- Initially he informed that it would be compensated in the rent payment.
-- Later he wanted the Painter to come in and sign and only then he would give the amount. 
-- This was weird, because the Painter himself was not reachable.
-- Informed the Onwer about the condition and asked him to do the needful.
-- He came, compensated the amount, after reaching out twice.`;
+// `maintenance.txt` is the single source of truth. It is fetched at runtime
+// (network-first, with the Service Worker caching the last good copy for offline use).
 
 function isSpecificDate(header) {
   // If header starts with a digit (e.g. "12 April 2026", "29 July 2026", "26 March 2026")
@@ -586,17 +506,17 @@ function renderPaidEntries(entries, filterQuery = '') {
     ? entries.filter(e => e.date.toLowerCase().includes(q) || e.type.toLowerCase().includes(q))
     : entries;
   if (!shown.length) {
-    container.innerHTML = `<div class="card bill-empty-state">No paid entries matching "${filterQuery}"</div>`;
-    if (filterQuery.trim().length >= 2) showToast(`No collections matching "${filterQuery}"`, '🔍');
+    container.innerHTML = `<div class="card bill-empty-state">No paid entries matching "${escapeHtml(filterQuery)}"</div>`;
+    if (filterQuery.trim().length >= 2) notifyNoMatch('collections', `No collections matching "${filterQuery}"`, filterQuery);
     return;
   }
   container.innerHTML = shown.map(e => `
     <section class="card paid-entry-card${e.additional ? ' paid-entry-card-add' : ''}">
       <div class="paid-entry-left">
-        <span class="paid-entry-date">✅ ${e.date}</span>
+        <span class="paid-entry-date">✅ ${escapeHtml(e.date)}</span>
         ${e.additional
-          ? `<span class="bill-special-badge">⚡ ${e.type}</span>`
-          : `<span class="bill-monthly-badge">💰 ${e.type}</span>`}
+          ? `<span class="bill-special-badge">⚡ ${escapeHtml(e.type)}</span>`
+          : `<span class="bill-monthly-badge">💰 ${escapeHtml(e.type)}</span>`}
       </div>
       <div class="paid-entry-amount">${formatINR(e.amount)}</div>
     </section>
@@ -644,7 +564,7 @@ function renderBillStats(groups) {
   if (!statsContainer) return;
   const activeGroups = groups.filter(g => g.items.length > 0);
   const totalAll = groups.reduce((acc, g) => acc + g.items.reduce((s, it) => s + it.amount, 0), 0);
-  const perTenantAll = totalAll / 8;
+  const perTenantAll = totalAll / FLATS.length;
   const monthlyCount = activeGroups.filter(g => !isSpecificDate(g.header)).length;
   const specialCount = activeGroups.filter(g => isSpecificDate(g.header)).length;
 
@@ -654,7 +574,7 @@ function renderBillStats(groups) {
       <span class="status-value">${formatINR(totalAll)}</span>
     </div>
     <div class="status-item">
-      <span class="status-label">Per Flat (÷8)</span>
+      <span class="status-label">Per Flat (÷${FLATS.length})</span>
       <span class="status-value" style="color:var(--accent); font-weight:700;">${formatINR(perTenantAll)}</span>
     </div>
     <div class="status-item">
@@ -684,15 +604,15 @@ function renderBillGroups(groups, filterQuery = '') {
   }
 
   if (!displayedGroups.length) {
-    container.innerHTML = `<div class="card bill-empty-state">No entries matching "${filterQuery}"</div>`;
-    if (filterQuery.trim().length >= 2) showToast(`No bills matching "${filterQuery}"`, '🔍');
+    container.innerHTML = `<div class="card bill-empty-state">No entries matching "${escapeHtml(filterQuery)}"</div>`;
+    if (filterQuery.trim().length >= 2) notifyNoMatch('bills', `No bills matching "${filterQuery}"`, filterQuery);
     return;
   }
 
   container.innerHTML = displayedGroups.map(g => {
     const isSpecial = isSpecificDate(g.header);
     const total = g.items.reduce((s, it) => s + it.amount, 0);
-    const perTenant = total / 8;
+    const perTenant = total / FLATS.length;
 
     // If no entries, do not show total or per flat share
     if (g.items.length === 0) {
@@ -700,7 +620,7 @@ function renderBillGroups(groups, filterQuery = '') {
         <section class="card bill-period-card ${isSpecial ? 'bill-special-card' : ''}">
           <div class="bill-period-header">
             <div class="bill-period-header-left">
-              <h2 class="card-title bill-period-title" style="margin-bottom:0;">${isSpecial ? '🛠️' : '📅'} ${g.header}</h2>
+              <h2 class="card-title bill-period-title" style="margin-bottom:0;">${isSpecial ? '🛠️' : '📅'} ${escapeHtml(g.header)}</h2>
               ${isSpecial ? '<span class="bill-special-badge">⚡ Additional Expense</span>' : '<span class="bill-monthly-badge">📅 Monthly</span>'}
             </div>
             <span class="bill-period-empty-badge">No entries</span>
@@ -712,7 +632,7 @@ function renderBillGroups(groups, filterQuery = '') {
 
     const rowsHtml = g.items.map(it => `
       <div class="bill-table-row">
-        <span class="bill-item-name"><span class="bill-item-bullet">•</span> ${it.name}</span>
+        <span class="bill-item-name"><span class="bill-item-bullet">•</span> ${escapeHtml(it.name)}</span>
         <span class="bill-item-amount">${formatINR(it.amount)}</span>
       </div>
     `).join('');
@@ -721,7 +641,7 @@ function renderBillGroups(groups, filterQuery = '') {
       <section class="card bill-period-card ${isSpecial ? 'bill-special-card' : ''}">
         <div class="bill-period-header">
           <div class="bill-period-header-left">
-            <h2 class="card-title bill-period-title" style="margin-bottom:0;">${isSpecial ? '🛠️' : '📅'} ${g.header}</h2>
+            <h2 class="card-title bill-period-title" style="margin-bottom:0;">${isSpecial ? '🛠️' : '📅'} ${escapeHtml(g.header)}</h2>
             ${isSpecial ? '<span class="bill-special-badge">⚡ Additional Expense</span>' : '<span class="bill-monthly-badge">📅 Monthly</span>'}
           </div>
           <span class="bill-period-badge">${g.items.length} item${g.items.length !== 1 ? 's' : ''}</span>
@@ -740,7 +660,7 @@ function renderBillGroups(groups, filterQuery = '') {
               <span class="bill-subtotal-val">${formatINR(total)}</span>
             </div>
             <div class="bill-tenant-row">
-              <span>👤 Per Flat Share (÷8)</span>
+              <span>👤 Per Flat Share (÷${FLATS.length})</span>
               <span class="bill-tenant-val">${formatINR(perTenant)}</span>
             </div>
           </div>
@@ -785,7 +705,7 @@ function parseIssueDate(str) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-function calculateIssueDuration(startDateStr, endDateStr, status) {
+function calculateIssueDuration(startDateStr, endDateStr) {
   const start = parseIssueDate(startDateStr);
   const end = parseIssueDate(endDateStr);
   if (!start) return { text: 'N/A', days: null, isOngoing: false };
@@ -943,6 +863,16 @@ function sortIssues(issues, modeId) {
         return (a.fileIndex ?? 0) - (b.fileIndex ?? 0);
       });
 
+    case 'status-desc':
+      return list.sort((a, b) => {
+        const sa = (a.status || '').toLowerCase();
+        const sb = (b.status || '').toLowerCase();
+        const aPending = sa.includes('pending') ? 1 : 0;
+        const bPending = sb.includes('pending') ? 1 : 0;
+        if (aPending !== bPending) return aPending - bPending;
+        return (a.fileIndex ?? 0) - (b.fileIndex ?? 0);
+      });
+
     default:
       return list;
   }
@@ -997,25 +927,23 @@ function renderIssues(filterQuery = '') {
   }
 
   if (!displayed.length) {
-    container.innerHTML = `<div class="card bill-empty-state">No issues matching "${filterQuery}"</div>`;
-    if (filterQuery.trim().length >= 2) showToast(`No issues matching "${filterQuery}"`, '🔍');
+    container.innerHTML = `<div class="card bill-empty-state">No issues matching "${escapeHtml(filterQuery)}"</div>`;
+    if (filterQuery.trim().length >= 2) notifyNoMatch('issues', `No issues matching "${filterQuery}"`, filterQuery);
     return;
   }
 
-  const currentMode = ISSUE_SORT_MODES[currentIssueSortIdx];
-  const sorted = sortIssues(displayed, currentMode.id);
+  const sorted = sortIssues(displayed, currentIssueSortId);
 
   container.innerHTML = sorted.map(issue => {
     const isPending = (issue.status || '').toLowerCase().includes('pending');
-    const isCompleted = (issue.status || '').toLowerCase().includes('completed');
-    const duration = calculateIssueDuration(issue.startDate, issue.endDate, issue.status);
+    const duration = calculateIssueDuration(issue.startDate, issue.endDate);
 
     const contextHtml = issue.context.length
       ? `
         <div class="issue-context-box">
           <span class="issue-context-title">Context & Log Details</span>
           <ul class="issue-context-list">
-            ${issue.context.map(c => `<li class="issue-context-item">${c}</li>`).join('')}
+            ${issue.context.map(c => `<li class="issue-context-item">${escapeHtml(c)}</li>`).join('')}
           </ul>
         </div>
       `
@@ -1025,7 +953,7 @@ function renderIssues(filterQuery = '') {
       <section class="card issue-card ${isPending ? 'issue-card-pending' : 'issue-card-completed'}">
         <div class="issue-card-header">
           <div class="issue-card-title-group">
-            <h2 class="issue-card-title">${isPending ? '⚠️' : '🛠️'} ${issue.title}</h2>
+            <h2 class="issue-card-title">${isPending ? '⚠️' : '🛠️'} ${escapeHtml(issue.title)}</h2>
           </div>
           <div class="issue-badges-row">
             ${isPending
@@ -1038,9 +966,9 @@ function renderIssues(filterQuery = '') {
         </div>
 
         <div class="issue-dates-bar">
-          <span class="issue-date-item">📅 <strong>Start:</strong> ${issue.startDate || 'N/A'}</span>
+          <span class="issue-date-item">📅 <strong>Start:</strong> ${escapeHtml(issue.startDate || 'N/A')}</span>
           <span class="date-separator">→</span>
-          <span class="issue-date-item">🏁 <strong>End:</strong> ${issue.endDate || 'Nill'}</span>
+          <span class="issue-date-item">🏁 <strong>End:</strong> ${escapeHtml(issue.endDate || 'Nill')}</span>
         </div>
 
         ${contextHtml}
@@ -1049,14 +977,20 @@ function renderIssues(filterQuery = '') {
   }).join('');
 }
 
-function cycleIssueSort() {
-  currentIssueSortIdx = (currentIssueSortIdx + 1) % ISSUE_SORT_MODES.length;
-  const mode = ISSUE_SORT_MODES[currentIssueSortIdx];
-  const btn = $('#issueSortBtn');
-  if (btn) btn.textContent = `🔀 Sort: ${mode.label}`;
-  const searchVal = $('#issueSearchInput') ? $('#issueSearchInput').value : '';
-  renderIssues(searchVal);
-  showToast(`Sorted by ${mode.name}`, '🔀');
+function initIssueSortControl() {
+  const select = $('#issueSortSelect');
+  if (!select) return;
+  select.innerHTML = ISSUE_SORT_MODES
+    .map(m => `<option value="${m.id}">🔀 ${m.label}</option>`)
+    .join('');
+  select.value = currentIssueSortId;
+  select.addEventListener('change', (e) => {
+    currentIssueSortId = e.target.value;
+    const searchVal = $('#issueSearchInput') ? $('#issueSearchInput').value : '';
+    renderIssues(searchVal);
+    const mode = ISSUE_SORT_MODES.find(m => m.id === currentIssueSortId);
+    if (mode) showToast(`Sorted by ${mode.name}`, '🔀');
+  });
 }
 
 function copyIssuesSummary() {
@@ -1066,7 +1000,7 @@ function copyIssuesSummary() {
   }
   let summary = `54GNs Apartments - Flat 7 Issues Log\n\n`;
   for (const issue of currentIssues) {
-    const duration = calculateIssueDuration(issue.startDate, issue.endDate, issue.status);
+    const duration = calculateIssueDuration(issue.startDate, issue.endDate);
     summary += `• ${issue.title} [${issue.status || 'Logged'}] (${duration.text})\n`;
     summary += `  Start: ${issue.startDate || '-'} → End: ${issue.endDate || 'Nill'}\n`;
     if (issue.context.length) {
@@ -1081,7 +1015,7 @@ function copyIssuesSummary() {
 
   navigator.clipboard.writeText(summary).then(() => {
     showToast('Copied issues summary!', '📋');
-  });
+  }).catch(() => showToast('Unable to copy to clipboard', '⚠️'));
 }
 
 async function loadAndRenderBills() {
@@ -1092,8 +1026,11 @@ async function loadAndRenderBills() {
     if (!res.ok) throw new Error('Fetch failed');
     text = await res.text();
   } catch (err) {
-    text = DEFAULT_MAINTENANCE_TEXT;
-    showToast('Offline mode: using cached records', '📶');
+    text = '';
+    if (!offlineBillsNotified) {
+      showToast('Offline: no cached records available yet', '📶');
+      offlineBillsNotified = true;
+    }
   }
 
   if (text && text.trim()) {
@@ -1113,6 +1050,10 @@ async function loadAndRenderBills() {
     renderIssues(issueSearchVal);
   } else {
     content.innerHTML = '<div class="card bill-empty-state">No billing data available.</div>';
+    const paidPane = $('#paidContent');
+    if (paidPane) paidPane.innerHTML = '<div class="card bill-empty-state">No paid collections recorded yet.</div>';
+    const issuesPane = $('#issuesContent');
+    if (issuesPane) issuesPane.innerHTML = '<div class="card bill-empty-state">No issues logged in maintenance.txt</div>';
   }
 }
 
@@ -1183,7 +1124,7 @@ function copyBillsSummary() {
     summary += `\n\n📌 Note: Payment dates mentioned are for Flat 7 (remaining flats fall around approximately the same dates).`;
     navigator.clipboard.writeText(summary).then(() => {
       showToast('Copied paid summary to clipboard!', '📋');
-    });
+    }).catch(() => showToast('Unable to copy to clipboard', '⚠️'));
     return;
   }
   if (!currentBillGroups.length) {
@@ -1195,20 +1136,20 @@ function copyBillsSummary() {
   for (const g of currentBillGroups) {
     if (g.items.length === 0) continue;
     const tot = g.items.reduce((s, it) => s + it.amount, 0);
-    const perTen = tot / 8;
+    const perTen = tot / FLATS.length;
     grandTotal += tot;
     const isSpecial = isSpecificDate(g.header);
     summary += `${isSpecial ? '⚡ [ADDITIONAL EXPENSE] ' : '📅 '}${g.header}\n`;
     for (const it of g.items) {
       summary += `  • ${it.name}: ${formatINR(it.amount)}\n`;
     }
-    summary += `  Total: ${formatINR(tot)} | Per Flat (÷8): ${formatINR(perTen)}\n\n`;
+    summary += `  Total: ${formatINR(tot)} | Per Flat (÷${FLATS.length}): ${formatINR(perTen)}\n\n`;
   }
-  summary += `💰 Grand Total: ${formatINR(grandTotal)} | Overall Per Flat: ${formatINR(grandTotal / 8)}`;
+  summary += `💰 Grand Total: ${formatINR(grandTotal)} | Overall Per Flat: ${formatINR(grandTotal / FLATS.length)}`;
 
   navigator.clipboard.writeText(summary).then(() => {
     showToast('Copied bill summary to clipboard!', '📋');
-  });
+  }).catch(() => showToast('Unable to copy to clipboard', '⚠️'));
 }
 
 function printCurrentView() {
@@ -1228,7 +1169,7 @@ function copyWeekInfo() {
     btn.textContent = '✅ Copied!';
     showToast('Copied rotation details!', '📋');
     setTimeout(() => { btn.textContent = '📋 Copy'; }, 1500);
-  });
+  }).catch(() => showToast('Unable to copy to clipboard', '⚠️'));
 }
 
 function shareWeekInfo() {
@@ -1242,7 +1183,7 @@ function shareWeekInfo() {
   } else {
     navigator.clipboard.writeText(text).then(() => {
       showToast('Copied to clipboard!', '📋');
-    });
+    }).catch(() => showToast('Unable to copy to clipboard', '⚠️'));
   }
 }
 
@@ -1274,7 +1215,6 @@ function init() {
   renderTimeline();
   renderSchedule('#upcomingBody', UPCOMING_WEEKS, 1);
   renderSchedule('#previousBody', PREVIOUS_WEEKS, -1);
-  loadAndRenderBills();
 
   $('#lastUpdated').textContent = `Last Updated: ${fmtFull(new Date())}`;
 
@@ -1290,7 +1230,7 @@ function init() {
   $('#paidTabBtn').addEventListener('click', () => switchBillsTab('paid'));
 
   // Issues page actions
-  $('#issueSortBtn').addEventListener('click', cycleIssueSort);
+  initIssueSortControl();
   $('#issueCopyBtn').addEventListener('click', copyIssuesSummary);
   $('#issuePrintBtn').addEventListener('click', printCurrentView);
 

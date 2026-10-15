@@ -97,11 +97,12 @@ Context:
 - Actual cost: Shower head 295, Wash basin tap 644, PVC hose 80, Washing machine tap 100, Pipe connector 20, Labour 450 - total 1,589.
 - Owner payment has not been completed.
 
-Issue: Pending Masonry Work (Roof, Gadapa, Bathroom Step, Tile Gaps)
+Issue: Pending Masonry Work
 StartDate: 09 May 2026
 EndDate: Nill
 Status: Pending
 Context:
+- (Roof, Gadapa, Bathroom Step, Tile Gaps) This should be done as soon as possible.
 - Rainwater drips from an electricity pipe, and with no gadapa at the front gate water enters the hall.
 - Roof needs sealing of holes and gaps (rain leakage), which also causes sparks in electric plugs.
 - Gadapa needs installation with a tile to stop water seeping into the hall.

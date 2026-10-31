@@ -214,7 +214,42 @@
         <section class="card bill-note-card" aria-label="Paid collections notes">
           <div class="bill-note-body">
             <p>📌 <strong>Payment Dates:</strong> The dates mentioned for the payment of the bills are for <strong>Flat 7</strong>. Payment dates for the remaining flats should fall around approximately the same dates.</p>
-            <p>📌 <strong>Reconciliation Note (4 Sep 2026):</strong> Paid is a single tenant's share <strong>(expense ÷ 8)</strong>. Gap +₹276.5:<br>• <strong>Aug 2026</strong> −₹0.25<br>• <strong>Jul 2026</strong> ₹65+₹500=₹565 vs ₹375 share (+₹190)<br>• <strong>29 Jul 2026</strong> Drainage +₹2.5<br>• <strong>Apr 2026</strong> +₹5.63<br>• <strong>11 Apr 2026</strong> Sump ₹500 vs ₹437.5 (+₹62.5)<br>• <strong>Mar 2026</strong> +₹3.75<br>• <strong>26 Mar 2026</strong> Gate Keys +₹0.25</p>
+            <!--
+              AI UPDATE GUIDE - RECONCILIATION NOTE
+              Source of truth: maintenance.txt (Paid + Expenses sections). Always recompute from it; never guess amounts.
+              1. Total Collected = sum of all amounts under "= Paid =".
+              2. Total Expenses = sum of all amounts under "= Expenses =".
+              3. Per-tenant share = Total Expenses divided by 8 (flat count).
+              4. Per-tenant gap = Total Collected minus per-tenant share.
+              5. Overall gap = per-tenant gap multiplied by 8 (shown below the per-tenant value).
+              6. On new data: set the note date to the latest entry, keep all historical bullet figures unchanged,
+                 and append only the new month(s). Monthly difference = amount paid for that month minus that month's expenses divided by 8.
+              7. The bullet list explains known variances; it is not a complete ledger. Missing monthly collections
+                 and compensated items (for example 9 Apr 2026 Motor Repair 890) can account for the difference
+                 between the bullets and the aggregate gap. The aggregate gap is authoritative.
+              8. Keep the badge centered with both scopes: per tenant and overall (x8). Use .gap-highlight for the badge,
+                 .bill-note-list for the bullets, .diff-pos for positive differences (green) and .diff-neg for negatives (red).
+              9. Keep paise precision from the source; do not re-round historical entries.
+              10. Keep the service worker cache version at v14 per project owner instruction; do not bump it for note edits.
+            -->
+            <p>📌 <strong>Reconciliation Note (31 Oct 2026):</strong> Paid is a single tenant's share <strong>(expense ÷ 8)</strong>.</p>
+            <div class="gap-highlight-row">
+              <div class="gap-highlight">
+                <span class="gap-highlight-main">Gap +₹276.5 <em>per tenant</em></span>
+                <span class="gap-highlight-sub">Overall (×8): ₹2,212</span>
+              </div>
+            </div>
+            <ul class="bill-note-list">
+              <li><strong>Oct 2026</strong> ₹727 vs ₹852 share <span class="diff-neg">(−₹125)</span></li>
+              <li><strong>Sep 2026</strong> ₹500 vs ₹375 share <span class="diff-pos">(+₹125)</span></li>
+              <li><strong>Aug 2026</strong> <span class="diff-neg">−₹0.25</span></li>
+              <li><strong>Jul 2026</strong> ₹65+₹500=₹565 vs ₹375 share <span class="diff-pos">(+₹190)</span></li>
+              <li><strong>29 Jul 2026</strong> Drainage <span class="diff-pos">+₹2.5</span></li>
+              <li><strong>Apr 2026</strong> <span class="diff-pos">+₹5.63</span></li>
+              <li><strong>11 Apr 2026</strong> Sump ₹500 vs ₹437.5 <span class="diff-pos">(+₹62.5)</span></li>
+              <li><strong>Mar 2026</strong> <span class="diff-pos">+₹3.75</span></li>
+              <li><strong>26 Mar 2026</strong> Gate Keys <span class="diff-pos">+₹0.25</span></li>
+            </ul>
           </div>
         </section>
       </div>

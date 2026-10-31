@@ -1,5 +1,6 @@
 = Paid =
 
+- 31 October 2026: Monthly: 727
 - 29 September 2026: Monthly: 500
 - 4 September 2026: Monthly: 513
 - 31 July 2026: Monthly: 500
@@ -13,7 +14,13 @@
 
 = Expenses =
 
+- November 2026
+
 - October 2026
+House Keeping: 3000
+Electricity Bill: 2116
+Broom Stick: 200
+Kitchen Drain Cleaning: 1500
 
 - September 2026
 House Keeping: 3000

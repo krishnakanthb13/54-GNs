@@ -69,6 +69,19 @@ EndDate:
 Status:
 Context:
 
+Issue: Common Terrace Disturbance
+StartDate: 10 November 2026
+EndDate: None
+Status: Pending
+Context:
+- Recurring issue regarding the common terrace area directly above Flat 7.
+- Weekend nights: Children dance and jump around from about 9:00 to 11:00 PM, and the noise carries heavily into Flat 7.
+- Holidays: During afternoons, children play cricket and other active games on the terrace overhead.
+- Diwali: Most of the crackers were burst on Flat 7 rooftop, leaving burn marks and chipped cement and tiles.
+- Prior communications: Spoke to the children directly and raised it in the building WhatsApp group, but the situation hasn't changed.
+- Action requested: Set clear rules for terrace use (timings, no crackers, no ball games) communicated to all residents, and conduct an inspection of the damage so repairs can be planned (as some issues were informed earlier).
+- Formal escalation: I feel my earlier requests have not been taken seriously in the building, so I’m following up formally with Owner.
+
 Issue: Drainage Issue in Restroom
 StartDate: 05 October 2026
 EndDate: 09 October 2026
@@ -106,7 +119,7 @@ Context:
 
 Issue: Pending Masonry Work
 StartDate: 09 May 2026
-EndDate: Nill
+EndDate: None
 Status: Pending
 Context:
 - (Roof, Gadapa, Bathroom Step, Tile Gaps) This should be done as soon as possible.
@@ -119,7 +132,7 @@ Context:
 
 Issue: Moist Electric Box
 StartDate: 24 March 2026
-EndDate: Nill
+EndDate: None
 Status: Pending
 Context:
 - The Electric Box which is inside the hall is having Moist/Water logging inside it.

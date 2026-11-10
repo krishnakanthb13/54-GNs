@@ -921,6 +921,7 @@ function renderIssues(filterQuery = '') {
       if (issue.status.toLowerCase().includes(q)) return true;
       if (issue.startDate.toLowerCase().includes(q)) return true;
       if (issue.endDate.toLowerCase().includes(q)) return true;
+      if (issue.duration && issue.duration.toLowerCase().includes(q)) return true;
       if (issue.context.some(c => c.toLowerCase().includes(q))) return true;
       return false;
     });
@@ -936,7 +937,7 @@ function renderIssues(filterQuery = '') {
 
   container.innerHTML = sorted.map(issue => {
     const isPending = (issue.status || '').toLowerCase().includes('pending');
-    const duration = calculateIssueDuration(issue.startDate, issue.endDate);
+    const duration = calculateIssueDuration(issue.startDate, issue.endDate, issue.duration);
 
     const contextHtml = issue.context.length
       ? `
@@ -1000,7 +1001,7 @@ function copyIssuesSummary() {
   }
   let summary = `54GNs Apartments - Flat 7 Issues Log\n\n`;
   for (const issue of currentIssues) {
-    const duration = calculateIssueDuration(issue.startDate, issue.endDate);
+    const duration = calculateIssueDuration(issue.startDate, issue.endDate, issue.duration);
     summary += `• ${issue.title} [${issue.status || 'Logged'}] (${duration.text})\n`;
     summary += `  Start: ${issue.startDate || '-'} → End: ${issue.endDate || 'Nill'}\n`;
     if (issue.context.length) {

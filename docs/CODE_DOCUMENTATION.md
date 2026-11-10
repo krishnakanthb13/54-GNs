@@ -100,7 +100,7 @@ The application is engineered as a zero-build, zero-dependency Progressive Web A
 
 ## 4. Offline & Cache Strategy (`sw.js`)
 
-- **Cache Identifier**: `motor-duty-v13`.
+- **Cache Identifier**: `motor-duty-v15`.
 - **Pre-cached Assets**:
   - Root: `./`, `./index.html`, `./manifest.json`, `./favicon.ico`
   - Core Bundles: `./assets/css/styles.css`, `./assets/js/script.js`

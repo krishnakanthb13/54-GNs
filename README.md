@@ -33,7 +33,7 @@ A minimal, self-contained, high-performance Progressive Web App (PWA) for managi
 - **Expenses View**:
   - Automatically totals each billing period (`- Month Year`) and calculates **Per Flat Share (÷ 8)** with Indian Rupee formatting (`₹`).
   - Monthly headers (e.g. `- August 2026`) show a `📅 Monthly` tag; date headers (e.g. `- 29 July 2026`) show a `⚡ Additional Expense` amber card.
-  - Empty months (e.g. `- October 2026` with no items) render as `No entries` with no totals.
+  - Empty months (e.g. `- November 2026` with no items) render as `No entries` with no totals.
   - Summary card: **Total Expenses**, **Per Flat (÷8)**, **Recorded Cycles** (`X Monthly · Y Additional`).
   - Live search filters by month or utility (e.g. `Electric`, `May`).
 - **Paid View**:
@@ -141,6 +141,7 @@ Edit [`maintenance.txt`](maintenance.txt) anytime using this format:
 ```text
 = Paid =
 
+- 31 October 2026: Monthly: 727
 - 29 September 2026: Monthly: 500
 - 4 September 2026: Monthly: 513
 - 31 July 2026: Monthly: 500
@@ -154,7 +155,13 @@ Edit [`maintenance.txt`](maintenance.txt) anytime using this format:
 
 = Expenses =
 
+- November 2026
+
 - October 2026
+House Keeping: 3000
+Electricity Bill: 2116
+Broom Stick: 200
+Kitchen Drain Cleaning: 1500
 
 - September 2026
 House Keeping: 3000
@@ -203,6 +210,19 @@ EndDate:
 Status:
 Context:
 
+Issue: Common Terrace Disturbance
+StartDate: 10 November 2026
+EndDate: None
+Status: Pending
+Context:
+- Recurring issue regarding the common terrace area directly above Flat 7.
+- Weekend nights: Children dance and jump around from about 9:00 to 11:00 PM, and the noise carries heavily into Flat 7.
+- Holidays: During afternoons, children play cricket and other active games on the terrace overhead.
+- Diwali: Most of the crackers were burst on Flat 7 rooftop, leaving burn marks and chipped cement and tiles.
+- Prior communications: Spoke to the children directly and raised it in the building WhatsApp group, but the situation hasn't changed.
+- Action requested: Set clear rules for terrace use (timings, no crackers, no ball games) communicated to all residents, and conduct an inspection of the damage so repairs can be planned (as some issues were informed earlier).
+- Formal escalation: I feel my earlier requests have not been taken seriously in the building, so I’m following up formally with Owner.
+
 Issue: Drainage Issue in Restroom
 StartDate: 05 October 2026
 EndDate: 09 October 2026
@@ -238,11 +258,12 @@ Context:
 - Actual cost: Shower head 295, Wash basin tap 644, PVC hose 80, Washing machine tap 100, Pipe connector 20, Labour 450 - total 1,589.
 - Owner payment has not been completed.
 
-Issue: Pending Masonry Work (Roof, Gadapa, Bathroom Step, Tile Gaps)
+Issue: Pending Masonry Work
 StartDate: 09 May 2026
-EndDate: Nill
+EndDate: None
 Status: Pending
 Context:
+- (Roof, Gadapa, Bathroom Step, Tile Gaps) This should be done as soon as possible.
 - Rainwater drips from an electricity pipe, and with no gadapa at the front gate water enters the hall.
 - Roof needs sealing of holes and gaps (rain leakage), which also causes sparks in electric plugs.
 - Gadapa needs installation with a tile to stop water seeping into the hall.
@@ -252,7 +273,7 @@ Context:
 
 Issue: Moist Electric Box
 StartDate: 24 March 2026
-EndDate: Nill
+EndDate: None
 Status: Pending
 Context:
 - The Electric Box which is inside the hall is having Moist/Water logging inside it.
@@ -286,14 +307,14 @@ Context:
    ```text
    Issue: Problem Name
    StartDate: DD Month Year
-   EndDate: DD Month Year (or Nill / Pending)
+   EndDate: DD Month Year (or None / Pending)
    Status: Completed | Pending
    Context:
    - Bullet point note 1
    - Bullet point note 2
    ```
    - The template block with empty fields is automatically skipped.
-   - Day differences between `StartDate` and `EndDate` are calculated automatically and rendered as duration pills (e.g. `⏱️ 4 days`, or `⏱️ 197 days (Ongoing)` when ongoing).
+   - Day differences between `StartDate` and `EndDate` are calculated automatically and rendered as duration pills (e.g. `⏱️ 4 days`, or `⏱️ 186 days (Ongoing)` when ongoing with `EndDate: None`).
 6. Leave blank lines between entries for readability.
 
 ---

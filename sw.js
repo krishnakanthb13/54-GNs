@@ -1,4 +1,4 @@
-const CACHE = 'motor-duty-v14';
+const CACHE = 'motor-duty-v15';
 const ASSETS = [
   './',
   './index.html',

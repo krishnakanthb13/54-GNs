@@ -1,0 +1,21 @@
+{
+  "name": "54-gns",
+  "version": "0.1.0",
+  "private": true,
+  "description": "54GNs Apartments water motor rotation, maintenance bills, collections and issues tracker",
+  "scripts": {
+    "serve": "node tests/server.js",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

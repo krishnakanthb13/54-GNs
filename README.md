@@ -345,6 +345,12 @@ Context:
 ├── manifest.json             # Progressive Web App (PWA) configuration (relative paths)
 ├── sw.js                     # Service Worker: app-shell cache + network-first maintenance.txt with offline fallback
 ├── vercel.json               # Vercel deployment configuration (headers, caching, cleanUrls)
+├── package.json              # Test scripts + Playwright dev dependency
+├── playwright.config.js      # Playwright config (starts the local static server)
+├── tests/                    # Playwright regression suite
+│   ├── fixtures/             # Deterministic maintenance.txt fixtures
+│   └── *.spec.js             # Rotation, bills, issues, navigation, responsive, a11y, resilience
+├── TESTING.md                # How to run and extend the regression suite
 ├── README.md                 # Documentation & user guide
 └── LICENSE                   # MIT License
 ```
@@ -383,6 +389,20 @@ python -m http.server 8080
 npx serve .
 ```
 Then open `http://localhost:8080` in your browser.
+
+---
+
+## 🧪 Regression Tests
+
+A Playwright suite guards every feature (rotation math, countdown, bills, paid, issues, sorting, search, themes, navigation, responsive layout, accessibility, offline handling). It runs against deterministic fixtures, so adding real bills never breaks it. Tests use a local server only and do not touch the live Vercel deployment.
+
+```bash
+npm install
+npm run test:install   # once: download Chromium
+npm test
+```
+
+See **[TESTING.md](TESTING.md)** for the coverage map, fixture conventions, and how to add a test.
 
 ---
 

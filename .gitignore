@@ -2,3 +2,10 @@
 
 # Personal WhatsApp export — keep out of the repository
 WhatsApp*.txt
+
+# Node / Playwright test artifacts
+node_modules/
+playwright-report/
+test-results/
+blob-report/
+

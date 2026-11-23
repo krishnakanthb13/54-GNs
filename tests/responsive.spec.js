@@ -82,10 +82,12 @@ test.describe('Responsive layout', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openApp(page, { hash: 'bills' });
 
-    // Compact design: ~36px tall, which stays comfortably tappable.
+    // Height varies with the runner's font metrics (~36px Windows, ~33px
+    // Linux CI). Assert a portable minimum and that the tap target is wide.
     for (const id of ['#expensesTabBtn', '#paidTabBtn']) {
       const box = await page.locator(id).boundingBox();
-      expect(box.height).toBeGreaterThanOrEqual(36);
+      expect(box.height, `${id} height`).toBeGreaterThanOrEqual(30);
+      expect(box.width, `${id} width`).toBeGreaterThan(80);
     }
 
     // Navigation controls fit inside the header.

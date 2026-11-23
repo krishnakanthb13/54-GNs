@@ -3,9 +3,11 @@
   --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
   --radius: 16px;
   --radius-sm: 10px;
-  --gap: 16px;
+  --gap: 14px;
+  --gap-tight: 10px;
   --transition: 0.25s ease;
   --max-width: 640px;
+  --header-h: 55px;
 }
 
 /* Theme 1: Dark Slate (Default Dark) */
@@ -157,6 +159,16 @@
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 body {
   font-family: var(--font);
   background: var(--bg);
@@ -176,16 +188,17 @@ body {
   background: var(--surface);
   backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--border);
-  padding: 16px 20px;
+  padding: 10px 0;
 }
 
 .header-top {
   max-width: var(--max-width);
   margin: 0 auto;
+  padding: 0 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .header-left {
@@ -233,14 +246,14 @@ body {
 
 .header-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 12px 20px 20px;
+  padding: 10px 16px 18px;
   display: flex;
   flex-direction: column;
   gap: var(--gap);
@@ -263,29 +276,31 @@ body {
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 16px;
   box-shadow: var(--shadow);
   transition: transform var(--transition), box-shadow var(--transition);
 }
 
-.card:hover {
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .card-title {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-dim);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 /* ===== Status Card ===== */
 .status-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 10px;
 }
 
 .status-item {
@@ -294,17 +309,18 @@ body {
 
 .status-label {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-dim);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .status-value {
   display: block;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .countdown-item {
@@ -334,27 +350,27 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .responsible-label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-dim);
 }
 
 .cycle-badge {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   color: var(--accent);
   background: var(--accent-dim);
-  padding: 3px 10px;
+  padding: 2px 9px;
   border-radius: 20px;
 }
 
 .responsible-flat {
-  font-size: 2.6rem;
+  font-size: 2.4rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--accent);
@@ -366,8 +382,8 @@ body {
   align-items: center;
   gap: 8px;
   color: var(--text-dim);
-  font-size: 0.9rem;
-  margin-top: 4px;
+  font-size: 0.86rem;
+  margin-top: 2px;
 }
 
 .date-separator {
@@ -378,7 +394,7 @@ body {
   height: 4px;
   background: var(--border);
   border-radius: 2px;
-  margin-top: 14px;
+  margin-top: 10px;
   overflow: hidden;
 }
 
@@ -392,14 +408,14 @@ body {
 /* ===== Instructions ===== */
 .instructions-grid {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .instruction-group h3 {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--accent);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .instruction-group ul {
@@ -407,9 +423,9 @@ body {
 }
 
 .instruction-group li {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   color: var(--text);
-  padding: 3px 0;
+  padding: 2px 0;
   padding-left: 1.4em;
   position: relative;
 }
@@ -469,11 +485,11 @@ body {
 .timeline {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .timeline-item {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-radius: var(--radius-sm);
   background: var(--surface-hover);
   border: 1px solid var(--border);
@@ -483,8 +499,10 @@ body {
   align-items: center;
 }
 
-.timeline-item:hover {
-  transform: translateX(4px);
+@media (hover: hover) {
+  .timeline-item:hover {
+    transform: translateX(4px);
+  }
 }
 
 .timeline-item.current {
@@ -529,27 +547,33 @@ body {
 
 .search-box input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg);
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-family: var(--font);
   outline: none;
-  transition: all var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.search-box input::placeholder {
+  color: var(--text-dim);
+  opacity: 0.8;
 }
 
 .search-box input:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 
 .search-result {
-  margin-top: 12px;
-  padding: 14px;
+  margin-top: 10px;
+  padding: 12px;
   background: var(--accent-dim);
   border-radius: var(--radius-sm);
-  font-size: 0.88rem;
+  font-size: 0.86rem;
 }
 
 .search-result.hidden {
@@ -559,23 +583,24 @@ body {
 /* ===== Actions ===== */
 .actions-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .action-btn {
   flex: 1;
   min-width: 100px;
-  padding: 12px 16px;
+  min-height: 40px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-weight: 600;
   font-family: var(--font);
   cursor: pointer;
-  transition: all var(--transition);
+  transition: background-color var(--transition), border-color var(--transition), transform var(--transition);
 }
 
 .action-btn:hover {
@@ -584,7 +609,18 @@ body {
 }
 
 .action-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
+}
+
+.action-btn:focus-visible,
+.icon-btn:focus-visible,
+.bill-tab-btn:focus-visible,
+.back-btn:focus-visible,
+.paid-info-btn:focus-visible,
+.sort-select:focus-visible,
+.footer a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Issues sort dropdown — reuses .action-btn sizing */
@@ -607,22 +643,30 @@ body {
 .icon-btn {
   width: 34px;
   height: 34px;
+  flex-shrink: 0;
   border: 1px solid var(--border);
   border-radius: 50%;
   background: var(--surface);
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
+  line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition);
+  transition: background-color var(--transition), border-color var(--transition), transform var(--transition);
 }
 
-.icon-btn:hover {
-  background: var(--accent-dim);
-  border-color: var(--accent);
-  transform: scale(1.1);
+@media (hover: hover) {
+  .icon-btn:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    transform: scale(1.08);
+  }
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
 }
 
 /* ===== Schedule ===== */
@@ -633,7 +677,7 @@ body {
 .schedule-thead {
   display: grid;
   grid-template-columns: 50px 60px 1fr 1fr 1fr;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-bottom: 2px solid var(--border);
 }
 
@@ -654,10 +698,10 @@ body {
 .schedule-tr {
   display: grid;
   grid-template-columns: 50px 60px 1fr 1fr 1fr;
-  padding: 8px 12px;
+  padding: 7px 10px;
   align-items: center;
   border-bottom: 1px solid var(--border);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   transition: background var(--transition);
 }
 
@@ -701,7 +745,7 @@ body {
 /* ===== Footer ===== */
 .footer {
   text-align: center;
-  padding: 24px 20px;
+  padding: 18px 16px;
   color: var(--text-dim);
   font-size: 0.78rem;
 }
@@ -717,8 +761,20 @@ body {
 
 /* ===== Responsive ===== */
 @media (max-width: 480px) {
+  .header-top {
+    padding: 0 12px;
+  }
+
+  .container {
+    padding: 8px 12px 16px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
   .title {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
   .responsible-flat {
@@ -730,13 +786,27 @@ body {
   }
 
   .status-grid {
-    gap: 12px;
+    gap: 8px;
+  }
+
+  .actions-row {
+    gap: 6px;
+  }
+
+  .action-btn {
+    min-width: 0;
+    padding: 9px 10px;
+    font-size: 0.8rem;
   }
 }
 
 @media (min-width: 768px) {
+  .header-top {
+    padding: 0 24px;
+  }
+
   .container {
-    padding: 32px;
+    padding: 20px 24px 24px;
   }
 
   .title {
@@ -804,52 +874,26 @@ body {
   }
 }
 
-.card {
-  animation: fadeIn 0.35s ease both;
-}
-
-.card:nth-child(1) {
-  animation-delay: 0.02s;
-}
-
-.card:nth-child(2) {
-  animation-delay: 0.06s;
-}
-
-.card:nth-child(3) {
-  animation-delay: 0.1s;
-}
-
-.card:nth-child(4) {
-  animation-delay: 0.14s;
-}
-
-.card:nth-child(5) {
-  animation-delay: 0.18s;
-}
-
-.card:nth-child(6) {
-  animation-delay: 0.22s;
-}
-
-.card:nth-child(7) {
-  animation-delay: 0.26s;
-}
-
-.card:nth-child(8) {
-  animation-delay: 0.3s;
-}
-
 .header {
   animation: slideDown 0.3s ease both;
 }
 
-.actions-row {
-  animation: fadeIn 0.35s ease 0.08s both;
-}
-
 .countdown {
   animation: pulse 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ===== Maintenance Bills Page Cards ===== */
@@ -858,36 +902,66 @@ body {
 }
 
 #billsView {
-  gap: 12px;
+  gap: var(--gap-tight);
 }
 
 #billsView .bill-summary-card {
-  padding: 16px 20px;
+  padding: 12px 14px;
+}
+
+#billsView .bill-summary-card .card-title {
+  font-size: 0.72rem;
+  margin-bottom: 8px;
+}
+
+#billsView .search-card,
+#issuesView .search-card {
+  padding: 12px 14px;
+}
+
+#billsView .search-card .card-title,
+#issuesView .search-card .card-title {
+  font-size: 0.68rem;
+  margin-bottom: 6px;
 }
 
 .bill-tabs {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 8;
   display: flex;
-  gap: 10px;
-  margin-top: -4px;
+  gap: 4px;
+  margin-top: 0;
+  padding: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
 .bill-tab-btn {
   flex: 1;
-  padding: 10px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
   color: var(--text-dim);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 700;
   font-family: var(--font);
   cursor: pointer;
-  transition: all var(--transition);
+  transition: background-color var(--transition), border-color var(--transition), color var(--transition);
 }
 
-.bill-tab-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text);
+@media (hover: hover) {
+  .bill-tab-btn:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+}
+
+.bill-tab-btn:active {
+  transform: scale(0.99);
 }
 
 .bill-tab-btn.active {
@@ -900,7 +974,7 @@ body {
 #paidPane {
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
+  gap: var(--gap-tight);
 }
 
 #expensesPane.hidden,
@@ -912,29 +986,30 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  border-left: 4px solid var(--green);
+  gap: 10px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--green);
 }
 
 .paid-entry-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   min-width: 0;
 }
 
 .paid-entry-date {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--green);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .paid-entry-amount {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--green);
   font-variant-numeric: tabular-nums;
@@ -944,7 +1019,7 @@ body {
 .paid-entry-card-add {
   background: var(--orange-dim);
   border-color: var(--orange);
-  border-left: 4px solid var(--orange);
+  border-left: 3px solid var(--orange);
 }
 
 .paid-entry-card-add .paid-entry-date,
@@ -1060,13 +1135,31 @@ body {
 
 .bill-summary-card .status-grid {
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 8px;
+}
+
+.bill-summary-card .status-label {
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+}
+
+.bill-summary-card .status-value {
+  font-size: 0.92rem;
+}
+
+.status-value.status-split {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .bills-list {
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
+  gap: var(--gap-tight);
 }
 
 .bill-period-card {
@@ -1078,69 +1171,73 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
+  padding: 10px 14px;
   background: var(--surface-hover);
   border-bottom: 1px solid var(--border);
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .bill-period-header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .bill-period-title {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--accent);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .bill-period-badge {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   color: var(--text-dim);
   background: var(--surface);
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
   border: 1px solid var(--border);
+  white-space: nowrap;
+  margin-left: auto;
 }
 
 .bill-special-badge {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--orange);
   background: var(--orange-dim);
   border: 1px solid var(--orange);
-  padding: 3px 9px;
-  border-radius: 12px;
+  padding: 2px 7px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .bill-monthly-badge {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 600;
   color: var(--accent);
   background: var(--accent-dim);
   border: 1px solid var(--border);
-  padding: 3px 9px;
-  border-radius: 12px;
+  padding: 2px 7px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 /* Special Ad-hoc Expense Card Styling */
 .bill-special-card {
-  border-left: 4px solid var(--orange);
+  border-left: 3px solid var(--orange);
 }
 
 .bill-special-card .bill-period-header {
@@ -1179,11 +1276,11 @@ body {
 .bill-table-head {
   display: flex;
   justify-content: space-between;
-  padding: 8px 20px;
-  font-size: 0.7rem;
+  padding: 6px 14px;
+  font-size: 0.64rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: var(--text-dim);
   border-bottom: 1px solid var(--border);
 }
@@ -1197,8 +1294,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 11px 20px;
-  font-size: 0.9rem;
+  padding: 8px 14px;
+  font-size: 0.86rem;
   border-bottom: 1px solid var(--border);
   transition: background var(--transition);
 }
@@ -1215,7 +1312,7 @@ body {
   color: var(--text);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .bill-item-bullet {
@@ -1231,8 +1328,8 @@ body {
 }
 
 .bill-empty-row {
-  padding: 16px 20px;
-  font-size: 0.86rem;
+  padding: 10px 14px;
+  font-size: 0.84rem;
   color: var(--text-dim);
   font-style: italic;
   text-align: center;
@@ -1242,22 +1339,22 @@ body {
 .bill-period-footer {
   background: var(--surface-hover);
   border-top: 1px solid var(--border);
-  padding: 14px 20px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .bill-subtotal-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   color: var(--text-dim);
 }
 
 .bill-subtotal-val {
-  font-size: 0.96rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--text);
   font-variant-numeric: tabular-nums;
@@ -1267,35 +1364,39 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   background: var(--accent-dim);
   border: 1px solid var(--accent);
   color: var(--text);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 600;
 }
 
 .bill-tenant-val {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-weight: 800;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
 
 .bill-empty-state {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-dim);
-  padding: 24px;
+  padding: 18px 14px;
   font-style: italic;
   text-align: center;
+}
+
+.bill-note-card {
+  padding: 14px 16px;
 }
 
 .bill-note-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  font-size: 0.86rem;
+  gap: 9px;
+  font-size: 0.82rem;
   color: var(--text-dim);
   line-height: 1.55;
 }
@@ -1305,7 +1406,7 @@ body {
 }
 
 .bill-note-body p + p {
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px dashed var(--border);
 }
 
@@ -1318,7 +1419,7 @@ body {
   padding-left: 1.15rem;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   list-style: disc;
 }
 
@@ -1337,8 +1438,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 7px 18px;
-  border-radius: 14px;
+  padding: 6px 14px;
+  border-radius: 12px;
   background: var(--orange-dim);
   border: 1px solid var(--orange);
   color: var(--orange);
@@ -1476,12 +1577,36 @@ body {
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .bill-summary-card .status-grid {
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .bill-summary-card .status-value {
+    font-size: 0.86rem;
+  }
+
+  .bill-summary-card .status-label {
+    font-size: 0.6rem;
+  }
+
+  .bill-period-header {
+    padding: 9px 12px;
+  }
+
+  .bill-table-head {
+    padding: 6px 12px;
+  }
+
+  .bill-table-row {
+    padding: 8px 12px;
+  }
+
+  .bill-period-footer {
+    padding: 9px 12px;
   }
 
   .bill-tenant-val {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 
   .modal-card {
@@ -1496,30 +1621,38 @@ body {
 
 /* ===== Maintenance Issues Page Styles ===== */
 #issuesView {
-  gap: 12px;
+  gap: var(--gap-tight);
 }
 
 #issuesView .bill-summary-card {
-  padding: 16px 20px;
+  padding: 12px 14px;
+}
+
+#issuesView .bill-summary-card .card-title {
+  font-size: 0.72rem;
+  margin-bottom: 8px;
 }
 
 .issues-list {
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
+  gap: var(--gap-tight);
 }
 
 .issue-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 9px;
   position: relative;
-  border-left: 4px solid var(--accent);
+  padding: 14px;
+  border-left: 3px solid var(--accent);
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
 
-.issue-card:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .issue-card:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .issue-card-completed {
@@ -1535,7 +1668,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -1544,11 +1677,11 @@ body {
   flex-direction: column;
   gap: 4px;
   flex: 1;
-  min-width: 200px;
+  min-width: 180px;
 }
 
 .issue-card-title {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: var(--text);
   line-height: 1.35;
@@ -1558,20 +1691,20 @@ body {
 .issue-badges-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   align-self: flex-start;
 }
 
 .issue-badge {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.03em;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .issue-badge-completed {
@@ -1588,16 +1721,16 @@ body {
 
 /* Duration Pill */
 .issue-duration-pill {
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
   background: var(--accent-dim);
   color: var(--accent);
   border: 1px solid var(--accent);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1611,11 +1744,11 @@ body {
 .issue-dates-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--text-dim);
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   background: var(--surface-hover);
   border: 1px solid var(--border);
@@ -1628,17 +1761,17 @@ body {
 .issue-date-item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .issue-context-box {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .issue-context-title {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1649,11 +1782,11 @@ body {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .issue-context-item {
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   color: var(--text);
   padding-left: 1.4em;
   position: relative;

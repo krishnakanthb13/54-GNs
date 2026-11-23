@@ -113,7 +113,7 @@ function renderStatus() {
   $('#currentFlat').textContent = flat;
 
   const countdown = $('#countdown');
-  countdown.textContent = daysLeft === 7 ? 'Today' : `${daysLeft} Day${daysLeft !== 1 ? 's' : ''} Remaining`;
+  countdown.textContent = `${daysLeft} Day${daysLeft !== 1 ? 's' : ''} Remaining`;
   countdown.className = 'status-value countdown ' +
     (daysLeft > 4 ? 'green' : daysLeft >= 2 ? 'orange' : 'red');
 }
@@ -460,8 +460,9 @@ function renderPaidStats(entries) {
     </div>
     <div class="status-item">
       <span class="status-label paid-label-inline">Records${entries.length ? ` <button id="paidInfoBtn" class="paid-info-btn" aria-label="Show full paid breakdown" title="${tooltip}">ⓘ</button>` : ''}</span>
-      <span class="status-value" style="font-size:0.86rem;">
-        ${monthlyEntries.length} Monthly · ${addEntries.length} Additional
+      <span class="status-value status-split">
+        <span>${monthlyEntries.length} Monthly</span>
+        <span>${addEntries.length} Additional</span>
       </span>
     </div>
   `;
@@ -528,6 +529,8 @@ function switchBillsTab(tab) {
   const isPaid = activeBillsTab === 'paid';
   $('#expensesTabBtn').classList.toggle('active', !isPaid);
   $('#paidTabBtn').classList.toggle('active', isPaid);
+  $('#expensesTabBtn').setAttribute('aria-pressed', String(!isPaid));
+  $('#paidTabBtn').setAttribute('aria-pressed', String(isPaid));
   $('#expensesPane').classList.toggle('hidden', isPaid);
   $('#paidPane').classList.toggle('hidden', !isPaid);
   $('#expensesSummaryCard').classList.toggle('hidden', isPaid);
@@ -579,7 +582,7 @@ function renderBillStats(groups) {
     </div>
     <div class="status-item">
       <span class="status-label">Recorded Cycles</span>
-      <span class="status-value" style="font-size:0.86rem;">${monthlyCount} Monthly · ${specialCount} Additional</span>
+      <span class="status-value status-split"><span>${monthlyCount} Monthly</span><span>${specialCount} Additional</span></span>
     </div>
   `;
 }

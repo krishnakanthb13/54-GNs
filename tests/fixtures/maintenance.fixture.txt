@@ -1,0 +1,58 @@
+= Paid =
+
++ 17 November 2026: 630
+- 31 October 2026: Monthly: 727
+- 29 September 2026: Monthly: 500
++ 29 July 2026: Drainage: 315
+
+= Expenses =
+
+- November 2026
+
+- 17 November 2026
+Check Valve: 740
+Filter: 800
+Sump & Tank Cleaning: 3500
+
+- October 2026
+House Keeping: 3000
+Electricity Bill: 2116
+Broom Stick: 200
+Kitchen Drain Cleaning: 1500
+
+- July 2026
+House Keeping: 3000
+
+- 29 July 2026
+Drainage Cleaning: 2500
+
+= Issues =
+
+Issue:
+StartDate:
+EndDate:
+Status:
+Context:
+
+Issue: Terrace Noise
+StartDate: 10 November 2026
+EndDate: None
+Status: Pending
+Context:
+- Noise from the terrace directly above Flat 7.
+- Raised in the WhatsApp group; no change yet.
+
+Issue: Drainage Blockage
+StartDate: 05 October 2026
+EndDate: 09 October 2026
+Status: Completed
+Context:
+- Water was not draining from the bathroom.
+- A plumber cleared broken bricks and plastic covers.
+
+Issue: Broken Tiles
+StartDate: 12 September 2026
+EndDate: 03 October 2026
+Status: Completed
+Context:
+- Six tiles cracked in the bedroom while the flat was locked.

@@ -1,0 +1,19 @@
+= Paid =
+
+not a valid line
+- Bad Date: abc
+
+= Expenses =
+
+- Weird Month
+Name: abc
+Price: 12.34.56
+Ignored: ₹1,234.56
+
+- 1 May 2026
+Decimal: 1234.56
+
+= Issues =
+
+Issue: This is not valid
+Context:

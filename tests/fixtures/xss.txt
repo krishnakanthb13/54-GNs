@@ -1,0 +1,18 @@
+= Paid =
+
+- 1 May 2026: Monthly: 100
+
+= Expenses =
+
+- May 2026
+<b>Bold</b> & "quotes": 100
+
+= Issues =
+
+Issue: <img src=x onerror="window.__xss=2">
+StartDate: 01 May 2026
+EndDate: None
+Status: Pending
+Context:
+- <script>window.__xss=3</script>
+- <img src=x onerror="window.__xss=4">
